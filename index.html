@@ -20,7 +20,7 @@
             overflow-x: hidden;
         }
 
-        /* --- MODAL ACCÈS ADMIN --- */
+        /* --- MODAL ACCÈS SÉCURISÉ --- */
         .admin-modal-overlay {
             display: none;
             position: fixed;
@@ -36,7 +36,7 @@
             padding: 30px;
             border-radius: 12px;
             border: 1px solid rgba(88, 101, 242, 0.4);
-            width: 350px;
+            width: 380px;
             text-align: center;
             box-shadow: 0 15px 35px rgba(0,0,0,0.9), 0 0 20px rgba(88, 101, 242, 0.2);
         }
@@ -138,10 +138,13 @@
             border-radius: 12px;
             border: 1px solid #2a2e45;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         /* --- BLOCS & SECTIONS --- */
-        .update-box, .announcements-box, .credits-card, .pub-box, .info-anim-box {
+        .update-box, .announcements-box, .credits-card, .pub-box, .info-anim-box, .founder-panel-box {
             background-color: #1a1d2e;
             border: 1px solid #2a2e45;
             border-radius: 12px;
@@ -176,12 +179,12 @@
             white-space: pre-wrap;
         }
 
-        /* --- ÉLÉMENTS RÉSERVÉS AUX ADMINS (MASQUÉS PAR DÉFAUT) --- */
-        .admin-only {
+        /* --- RESTRICTIONS DE RÔLES (MASQUÉS PAR DÉFAUT) --- */
+        .admin-only, .founder-only {
             display: none !important;
         }
 
-        .admin-controls-box {
+        .admin-controls-box, .founder-controls-box {
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px dashed #2a2e45;
@@ -190,7 +193,8 @@
             gap: 10px;
         }
 
-        .admin-controls-box input, .admin-controls-box textarea {
+        .admin-controls-box input, .admin-controls-box textarea,
+        .founder-controls-box input, .founder-controls-box textarea, .founder-controls-box select {
             width: 100%;
             padding: 10px;
             border-radius: 6px;
@@ -199,7 +203,7 @@
             color: white;
             font-family: inherit;
         }
-        .admin-controls-box textarea { resize: vertical; height: 70px; }
+        .admin-controls-box textarea, .founder-controls-box textarea { resize: vertical; height: 70px; }
 
         .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
         
@@ -214,6 +218,9 @@
 
         .btn-del { background: #f23f43; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-del:hover { background: #d13438; }
+
+        .btn-founder { background: #df5353; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-founder:hover { background: #c54343; }
 
         /* LISTE DE CARTES D'ANIMATION */
         .anim-card-item {
@@ -254,16 +261,16 @@
 </head>
 <body>
 
-    <!-- MODAL ACCÈS ADMIN -->
+    <!-- MODAL ACCÈS SÉCURISÉ -->
     <div id="adminModal" class="admin-modal-overlay">
         <div class="admin-card">
-            <h2>Sécurité Admin</h2>
-            <p style="font-size:0.8rem; color:#a0a5c0; margin-bottom:15px;">Entrez le mot de passe administrateur</p>
+            <h2>Connexion Sécurisée</h2>
+            <p style="font-size:0.8rem; color:#a0a5c0; margin-bottom:15px;">Entrez votre mot de passe Admin ou Fondateur</p>
             <div class="input-group-pass">
                 <input type="password" id="adminPassInput" placeholder="Mot de passe">
                 <span class="toggle-password" onclick="togglePasswordVisibility()">👁️‍🗨️</span>
             </div>
-            <button onclick="verifyAdminPassword()">Valider</button>
+            <button onclick="verifyPassword()">Se connecter</button>
             <button class="admin-close-btn" onclick="closeAdminModal()">Annuler</button>
             <div id="adminLoginError" class="admin-error"></div>
         </div>
@@ -277,8 +284,8 @@
                 <div class="nav-group">
                     <button class="nav-btn active" onclick="switchView('dashboard', this)">📊 Tableau de Bord</button>
                     <button class="nav-btn" onclick="switchView('credits', this)">💖 Crédits & Animation</button>
-                    <!-- BOUTON ACCÈS ADMIN -->
-                    <button class="nav-btn" onclick="openAdminModal()" style="color: #f0b232; border-left: 3px solid #f0b232; margin-top: 10px;">🔐 Accès Admin</button>
+                    <!-- BOUTON ACCÈS -->
+                    <button class="nav-btn" onclick="openAdminModal()" style="color: #f0b232; border-left: 3px solid #f0b232; margin-top: 10px;">🔐 Connexion Staff</button>
                 </div>
             </div>
             <div>
@@ -295,12 +302,13 @@
         <div class="main-content">
             <div class="header-bar">
                 <h1 id="pageTitle">Tableau de Bord</h1>
+                <div id="maintenanceBadge" style="font-size: 0.85rem; background: #23a55a; padding: 4px 10px; border-radius: 4px; font-weight: bold;">Statut : Public Actif</div>
             </div>
 
             <!-- SECTION TABLEAU DE BORD -->
             <div id="view-dashboard" class="view-section active">
                 
-                <!-- BOX MISES À JOUR -->
+                <!-- BOX MISES À JOUR (Réservé au Fondateur) -->
                 <div class="update-box">
                     <div class="update-header">
                         <div class="update-title">🚀 Mises à Jour</div>
@@ -308,13 +316,14 @@
                     </div>
                     <div class="update-content" id="siteUpdateDisplay">Bienvenue sur le tableau de bord de la communauté !</div>
                     
-                    <!-- Contrôles Admin (Cachés par défaut) -->
-                    <div class="admin-only admin-controls-box" id="adminUpdateControls">
+                    <!-- Contrôles Exclusifs Fondateur -->
+                    <div class="founder-only founder-controls-box" id="founderUpdateControls">
+                        <p style="color: #df5353; font-size: 0.85rem; font-weight: bold;">⚙️ Contrôles exclusifs du Fondateur (Mises à jour)</p>
                         <input type="text" id="inputUpdateDate" placeholder="Date (ex: 09 Août 2026)">
-                        <textarea id="inputUpdateText" placeholder="Écrivez le contenu de la mise à jour..."></textarea>
+                        <textarea id="inputUpdateText" placeholder="Écrivez le contenu de la mise à jour globale du site..."></textarea>
                         <div class="btn-group">
-                            <button class="btn-save" onclick="saveUpdateNote()">Enregistrer les modifications</button>
-                            <button class="btn-del" onclick="clearUpdateNote()">Effacer la mise à jour</button>
+                            <button class="btn-founder" onclick="saveUpdateNote()">Publier la mise à jour</button>
+                            <button class="btn-del" onclick="clearUpdateNote()">Effacer la note</button>
                         </div>
                     </div>
                 </div>
@@ -329,11 +338,31 @@
                         </div>
                     </div>
 
-                    <!-- Contrôles Admin (Cachés par défaut) -->
+                    <!-- Contrôles Admin / Fondateur -->
                     <div class="admin-only admin-controls-box" id="adminAnnouncementControls">
                         <input type="text" id="newAnnouncementInput" placeholder="Saisir un nouvel avis/annonce...">
                         <div>
                             <button class="btn-add" onclick="addAnnouncement()">Ajouter l'annonce</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANNEAU DE CONTRÔLE AVANCÉ (EXCLUSIF FONDATEUR) -->
+                <div class="founder-panel-box founder-only" id="founderExtraPanel">
+                    <h3 style="color: #df5353; margin-bottom: 10px;">👑 Console de Commandes du Fondateur</h3>
+                    <p style="color: #a0a5c0; font-size: 0.9rem; margin-bottom: 15px;">Outils pratiques et efficaces pour piloter l'ensemble de la plateforme.</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="background: #121420; padding: 12px; border-radius: 8px; border: 1px solid #2a2e45;">
+                            <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: #fff;">🔒 Mode Maintenance du Site</h4>
+                            <p style="font-size: 0.8rem; color: #a0a5c0; margin-bottom: 10px;">Bloque l'accès aux visiteurs extérieurs.</p>
+                            <button class="btn-founder" id="btnToggleMaint" onclick="toggleMaintenance()">Activer la maintenance</button>
+                        </div>
+
+                        <div style="background: #121420; padding: 12px; border-radius: 8px; border: 1px solid #2a2e45;">
+                            <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: #fff;">🧹 Vider les Annonces</h4>
+                            <p style="font-size: 0.8rem; color: #a0a5c0; margin-bottom: 10px;">Nettoie instantanément le flux d'annonces.</p>
+                            <button class="btn-del" onclick="clearAllAnnouncements()">Tout supprimer</button>
                         </div>
                     </div>
                 </div>
@@ -361,7 +390,7 @@
                         </div>
                     </div>
 
-                    <!-- Contrôles Admin pour Ajouter une Info Animation (Cachés par défaut) -->
+                    <!-- Contrôles Admin / Fondateur -->
                     <div class="admin-only admin-controls-box" id="adminAnimControls">
                         <h4>➕ Ajouter une information d'animation</h4>
                         <input type="text" id="newAnimTitle" placeholder="Titre de l'information / de l'activité...">
@@ -377,7 +406,7 @@
                     <h3>🏆 Équipe & Crédits</h3>
                     <p id="creditsTextDisplay" style="margin-top:8px; line-height:1.5;">Espace officiel géré et administré par l'équipe de modération et d'animation de la communauté.</p>
                     
-                    <!-- Contrôles Admin (Cachés par défaut) -->
+                    <!-- Contrôles Admin / Fondateur -->
                     <div class="admin-only admin-controls-box" id="adminCreditsControls">
                         <textarea id="inputCreditsText" placeholder="Modifier la description de l'équipe..."></textarea>
                         <div class="btn-group">
@@ -398,7 +427,8 @@
     </div>
 
     <script>
-        let isAdmin = false;
+        let userRole = null; // 'none', 'admin', 'founder'
+        let isMaintenanceOn = false;
 
         function togglePasswordVisibility() {
             const passInput = document.getElementById('adminPassInput');
@@ -408,11 +438,11 @@
         function switchView(viewId, btn) {
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => {
-                if(!b.textContent.includes('Accès Admin')) b.classList.remove('active');
+                if(!b.textContent.includes('Connexion Staff')) b.classList.remove('active');
             });
             
             document.getElementById('view-' + viewId).classList.add('active');
-            if(!btn.textContent.includes('Accès Admin')) btn.classList.add('active');
+            if(!btn.textContent.includes('Connexion Staff')) btn.classList.add('active');
 
             const titleElement = document.getElementById('pageTitle');
             if(viewId === 'dashboard') titleElement.innerText = "Tableau de Bord";
@@ -420,8 +450,8 @@
         }
 
         function openAdminModal() {
-            if(isAdmin) {
-                alert("Vous êtes déjà connecté en tant qu'Administrateur !");
+            if(userRole !== null) {
+                alert("Vous êtes déjà connecté en tant que " + userRole.toUpperCase() + " !");
                 return;
             }
             document.getElementById('adminModal').style.display = 'flex';
@@ -433,46 +463,90 @@
             document.getElementById('adminModal').style.display = 'none';
         }
 
-        function verifyAdminPassword() {
+        function verifyPassword() {
             const pass = document.getElementById('adminPassInput').value;
-            if(pass === "gazpartoutetjuleslesbg") {
-                isAdmin = true;
-                document.getElementById('userRoleDisplay').innerText = "Administrateur";
-                document.getElementById('userRoleDisplay').style.color = "#23a55a";
-                
-                // Révéler les outils d'administration en modifiant leur affichage en bloc/flex
-                document.querySelectorAll('.admin-only').forEach(el => {
-                    el.style.setProperty('display', 'flex', 'important');
-                });
+
+            if(pass === "Kaljor90137") {
+                // RÔLE FONDATEUR (Accès total + Mises à jour + Outils avancés)
+                userRole = 'founder';
+                const roleDisplay = document.getElementById('userRoleDisplay');
+                roleDisplay.innerText = "Fondateur";
+                roleDisplay.style.color = "#df5353";
+
+                // Afficher éléments Admin et Fondateur
+                document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'flex', 'important'));
+                document.querySelectorAll('.founder-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
 
                 closeAdminModal();
-                alert("Mode Administrateur activé avec succès !");
-            } else {
+                alert("Connecté avec succès en tant que Fondateur ! Accès total débloqué.");
+            } 
+            else if(pass === "gazpartoutetjuleslesbg") {
+                // RÔLE ADMINISTRATEUR (Gestion Animation, Crédits, Annonces - PAS de Mises à jour)
+                userRole = 'admin';
+                const roleDisplay = document.getElementById('userRoleDisplay');
+                roleDisplay.innerText = "Administrateur";
+                roleDisplay.style.color = "#23a55a";
+
+                // Afficher uniquement les éléments Admin (les éléments .founder-only restent cachés)
+                document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'flex', 'important'));
+
+                closeAdminModal();
+                alert("Connecté avec succès en tant qu'Administrateur !");
+            } 
+            else {
                 document.getElementById('adminLoginError').innerText = "Mot de passe incorrect.";
             }
         }
 
-        /* --- FONCTIONS DE GESTION ADMINISTRATIVE --- */
+        /* --- FONCTIONS DE GESTION (SÉCURISÉES PAR RÔLE) --- */
 
+        // Réservé au Fondateur
         function saveUpdateNote() {
-            if(!isAdmin) return;
+            if(userRole !== 'founder') return;
             const newDate = document.getElementById('inputUpdateDate').value;
             const newText = document.getElementById('inputUpdateText').value;
             
             if(newDate) document.getElementById('siteUpdateDate').innerText = "Dernière modification : " + newDate;
             if(newText) document.getElementById('siteUpdateDisplay').innerText = newText;
-            alert("Note de mise à jour enregistrée !");
+            alert("Mise à jour globale du site publiée avec succès !");
         }
 
         function clearUpdateNote() {
-            if(!isAdmin) return;
-            if(confirm("Voulez-vous vraiment effacer la note de mise à jour ?")) {
+            if(userRole !== 'founder') return;
+            if(confirm("Voulez-vous effacer la note de mise à jour ?")) {
                 document.getElementById('siteUpdateDisplay').innerText = "Aucune mise à jour actuellement.";
             }
         }
 
+        function toggleMaintenance() {
+            if(userRole !== 'founder') return;
+            isMaintenanceOn = !isMaintenanceOn;
+            const badge = document.getElementById('maintenanceBadge');
+            const btn = document.getElementById('btnToggleMaint');
+
+            if(isMaintenanceOn) {
+                badge.innerText = "Statut : 🛠️ Maintenance";
+                badge.style.background = "#f23f43";
+                btn.innerText = "Désactiver la maintenance";
+                alert("Mode maintenance activé sur le site.");
+            } else {
+                badge.innerText = "Statut : Public Actif";
+                badge.style.background = "#23a55a";
+                btn.innerText = "Activer la maintenance";
+                alert("Le site est de nouveau actif pour tous.");
+            }
+        }
+
+        function clearAllAnnouncements() {
+            if(userRole !== 'founder') return;
+            if(confirm("Voulez-vous supprimer toutes les annonces d'un coup ?")) {
+                document.getElementById('announcementsList').innerHTML = '';
+            }
+        }
+
+        // Accessible par Admin et Fondateur
         function addAnnouncement() {
-            if(!isAdmin) return;
+            if(userRole === null) return;
             const text = document.getElementById('newAnnouncementInput').value.trim();
             if(!text) return;
             
@@ -485,7 +559,7 @@
         }
 
         function addAnimCard() {
-            if(!isAdmin) return;
+            if(userRole === null) return;
             const title = document.getElementById('newAnimTitle').value.trim();
             const desc = document.getElementById('newAnimDesc').value.trim();
 
@@ -514,7 +588,7 @@
         }
 
         function editAnimCard(btn) {
-            if(!isAdmin) return;
+            if(userRole === null) return;
             const card = btn.closest('.anim-card-item');
             const currentTitle = card.querySelector('h4').childNodes[0].textContent.replace('📌', '').replace('🎭', '').trim();
             const currentDesc = card.querySelector('p').innerText;
@@ -530,7 +604,7 @@
         }
 
         function saveCreditsText() {
-            if(!isAdmin) return;
+            if(userRole === null) return;
             const text = document.getElementById('inputCreditsText').value.trim();
             if(text) {
                 document.getElementById('creditsTextDisplay').innerText = text;
