@@ -180,7 +180,7 @@
         }
 
         /* --- RESTRICTIONS DE RÔLES (MASQUÉS PAR DÉFAUT) --- */
-        .admin-only, .founder-only {
+        .admin-only, .founder-only, .logged-in-only {
             display: none !important;
         }
 
@@ -284,8 +284,12 @@
                 <div class="nav-group">
                     <button class="nav-btn active" onclick="switchView('dashboard', this)">📊 Tableau de Bord</button>
                     <button class="nav-btn" onclick="switchView('credits', this)">💖 Crédits & Animation</button>
-                    <!-- BOUTON ACCÈS -->
-                    <button class="nav-btn" onclick="openAdminModal()" style="color: #f0b232; border-left: 3px solid #f0b232; margin-top: 10px;">🔐 Connexion Staff</button>
+                    
+                    <!-- BOUTON CONNEXION (Visible si déconnecté) -->
+                    <button id="btnLoginNav" class="nav-btn" onclick="openAdminModal()" style="color: #f0b232; border-left: 3px solid #f0b232; margin-top: 10px;">🔐 Connexion Staff</button>
+                    
+                    <!-- BOUTON DÉCONNEXION (Visible uniquement si connecté en Admin ou Fondateur) -->
+                    <button id="btnLogoutNav" class="logged-in-only nav-btn" onclick="logoutStaff()" style="color: #f23f43; border-left: 3px solid #f23f43; margin-top: 10px;">🚪 Déconnexion</button>
                 </div>
             </div>
             <div>
@@ -308,7 +312,7 @@
             <!-- SECTION TABLEAU DE BORD -->
             <div id="view-dashboard" class="view-section active">
                 
-                <!-- BOX MISES À JOUR (Réservé au Fondateur) -->
+                <!-- BOX MISES À JOUR -->
                 <div class="update-box">
                     <div class="update-header">
                         <div class="update-title">🚀 Mises à Jour</div>
@@ -438,11 +442,15 @@
         function switchView(viewId, btn) {
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => {
-                if(!b.textContent.includes('Connexion Staff')) b.classList.remove('active');
+                if(!b.textContent.includes('Connexion Staff') && !b.textContent.includes('Déconnexion')) {
+                    b.classList.remove('active');
+                }
             });
             
             document.getElementById('view-' + viewId).classList.add('active');
-            if(!btn.textContent.includes('Connexion Staff')) btn.classList.add('active');
+            if(!btn.textContent.includes('Connexion Staff') && !btn.textContent.includes('Déconnexion')) {
+                btn.classList.add('active');
+            }
 
             const titleElement = document.getElementById('pageTitle');
             if(viewId === 'dashboard') titleElement.innerText = "Tableau de Bord";
@@ -467,28 +475,30 @@
             const pass = document.getElementById('adminPassInput').value;
 
             if(pass === "Kaljor90137") {
-                // RÔLE FONDATEUR (Accès total + Mises à jour + Outils avancés)
                 userRole = 'founder';
                 const roleDisplay = document.getElementById('userRoleDisplay');
                 roleDisplay.innerText = "Fondateur";
                 roleDisplay.style.color = "#df5353";
 
-                // Afficher éléments Admin et Fondateur
+                // Affichage des éléments Admin, Fondateur et bouton de Déconnexion
                 document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'flex', 'important'));
                 document.querySelectorAll('.founder-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+                document.querySelectorAll('.logged-in-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+                document.getElementById('btnLoginNav').style.display = 'none';
 
                 closeAdminModal();
-                alert("Connecté avec succès en tant que Fondateur ! Accès total débloqué.");
+                alert("Connecté avec succès en tant que Fondateur !");
             } 
             else if(pass === "gazpartoutetjuleslesbg") {
-                // RÔLE ADMINISTRATEUR (Gestion Animation, Crédits, Annonces - PAS de Mises à jour)
                 userRole = 'admin';
                 const roleDisplay = document.getElementById('userRoleDisplay');
                 roleDisplay.innerText = "Administrateur";
                 roleDisplay.style.color = "#23a55a";
 
-                // Afficher uniquement les éléments Admin (les éléments .founder-only restent cachés)
+                // Affichage des éléments Admin et bouton de Déconnexion
                 document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'flex', 'important'));
+                document.querySelectorAll('.logged-in-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+                document.getElementById('btnLoginNav').style.display = 'none';
 
                 closeAdminModal();
                 alert("Connecté avec succès en tant qu'Administrateur !");
@@ -498,9 +508,28 @@
             }
         }
 
-        /* --- FONCTIONS DE GESTION (SÉCURISÉES PAR RÔLE) --- */
+        // Fonction de déconnexion globale
+        function logoutStaff() {
+            if(confirm("Voulez-vous vraiment vous déconnecter de votre session staff ?")) {
+                userRole = null;
+                const roleDisplay = document.getElementById('userRoleDisplay');
+                roleDisplay.innerText = "Membre";
+                roleDisplay.style.color = "#5865F2";
 
-        // Réservé au Fondateur
+                // Masquer tous les éléments admin, fondateur et de déconnexion
+                document.querySelectorAll('.admin-only, .founder-only, .logged-in-only').forEach(el => {
+                    el.style.setProperty('display', 'none', 'important');
+                });
+                
+                // Réafficher le bouton de connexion standard
+                document.getElementById('btnLoginNav').style.display = 'block';
+
+                alert("Vous avez été déconnecté avec succès.");
+            }
+        }
+
+        /* --- FONCTIONS DE GESTION --- */
+
         function saveUpdateNote() {
             if(userRole !== 'founder') return;
             const newDate = document.getElementById('inputUpdateDate').value;
@@ -544,7 +573,6 @@
             }
         }
 
-        // Accessible par Admin et Fondateur
         function addAnnouncement() {
             if(userRole === null) return;
             const text = document.getElementById('newAnnouncementInput').value.trim();
