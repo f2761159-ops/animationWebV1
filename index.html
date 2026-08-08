@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Statut & Communauté</title>
+    <title>Dashboard Communauté</title>
 
     <style>
         * {
@@ -138,21 +138,10 @@
             border-radius: 12px;
             border: 1px solid #2a2e45;
             margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .badge-status {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            background-color: #23a55a;
-            color: white;
         }
 
         /* --- BLOCS & SECTIONS --- */
-        .update-box, .announcements-box, .global-status-card, .credits-card, .pub-box {
+        .update-box, .announcements-box, .credits-card, .pub-box {
             background-color: #1a1d2e;
             border: 1px solid #2a2e45;
             border-radius: 12px;
@@ -225,14 +214,6 @@
         .btn-add { background: #23a55a; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
         .btn-del { background: #f23f43; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
-        .global-status-card { display: flex; align-items: center; justify-content: space-between; }
-        .status-info { display: flex; align-items: center; gap: 15px; }
-        .status-dot {
-            width: 18px; height: 18px; border-radius: 50%; background-color: #23a55a; box-shadow: 0 0 10px rgba(35, 165, 90, 0.6);
-        }
-        .status-title { font-size: 1.2rem; font-weight: bold; }
-        .status-sub { font-size: 0.85rem; color: #a0a5c0; }
-
         .view-section { display: none; }
         .view-section.active { display: block; }
     </style>
@@ -258,7 +239,7 @@
         <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-top">
-                <h2>Serveur Monitor</h2>
+                <h2>Espace Communauté</h2>
                 <div class="nav-group">
                     <button class="nav-btn active" onclick="switchView('dashboard', this)">📊 Tableau de Bord</button>
                     <button class="nav-btn" onclick="switchView('credits', this)">💖 Crédits & Communauté</button>
@@ -279,10 +260,7 @@
         <!-- MAIN CONTENT -->
         <div class="main-content">
             <div class="header-bar">
-                <div>
-                    <h1>Tableau de Bord</h1>
-                </div>
-                <div id="statusBadge" class="badge-status">Opérationnel</div>
+                <h1>Tableau de Bord</h1>
             </div>
 
             <!-- SECTION TABLEAU DE BORD -->
@@ -313,16 +291,6 @@
                     <div id="adminAnnouncementControls" class="admin-controls">
                         <input type="text" id="newAnnouncementInput" placeholder="Nouvelle annonce...">
                         <button class="btn-add" onclick="addAnnouncement()">Ajouter</button>
-                    </div>
-                </div>
-
-                <div class="global-status-card">
-                    <div class="status-info">
-                        <div id="statusDot" class="status-dot"></div>
-                        <div>
-                            <div id="statusMainTitle" class="status-title">Tous les systèmes fonctionnent normalement</div>
-                            <div id="statusSubTitle" class="status-sub">Aucune perturbation constatée.</div>
-                        </div>
                     </div>
                 </div>
             </div>
