@@ -2,44 +2,499 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Animateurs Jeux RP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Statut Discord & Pro</title>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Globe.gl & Three.js pour la Terre 3D -->
+    <script src="https://unpkg.com/three"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #121212; color: #fff; text-align: center; }
-        .pub-section { background: #1f1f1f; padding: 30px; border-radius: 10px; margin-bottom: 20px; }
-        .btn-discord { background: #5865F2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; }
-        .annonces-box { background: #262626; padding: 20px; border-radius: 10px; margin-top: 20px; }
-        .status-ouvert { color: #2ecc71; font-weight: bold; }
-        .status-ferme { color: #e74c3c; font-weight: bold; }
-        .admin-link { margin-top: 40px; display: block; color: #888; font-size: 0.9em; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f111a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* --- MODAL DE CONNEXION AVEC FOND DÉGRADÉ STYLÉ --- */
+        .login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1b223d 0%, #080a10 70%, #000000 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(8px);
+        }
+        .login-card {
+            background-color: rgba(26, 29, 46, 0.9);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(88, 101, 242, 0.4);
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9), 0 0 20px rgba(88, 101, 242, 0.2);
+        }
+        .login-card h2 { color: #5865F2; margin-bottom: 10px; }
+        
+        .input-group-pass {
+            position: relative;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 10px 40px 10px 10px;
+            border-radius: 6px;
+            border: 1px solid #2e3352;
+            background: #121420;
+            color: #fff;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #a0a5c0;
+            font-size: 0.9rem;
+        }
+        .toggle-password:hover { color: #fff; }
+
+        .login-card button {
+            width: 100%;
+            padding: 10px;
+            background: #5865F2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .login-card button:hover { background: #4752c4; }
+        .login-error { color: #f23f43; font-size: 0.85rem; margin-top: 10px; }
+
+        /* --- ÉCRAN DE CHARGEMENT --- */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #0a1128 0%, #03050c 70%, #000000 100%);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .loading-globe-bg {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(88, 101, 242, 0.15) 0%, rgba(35, 165, 90, 0.05) 50%, transparent 80%);
+            box-shadow: 0 0 60px rgba(88, 101, 242, 0.2), inset 0 0 40px rgba(88, 101, 242, 0.3);
+            animation: pulseGlobe 4s ease-in-out infinite alternate;
+            z-index: 1;
+        }
+        @keyframes pulseGlobe {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            100% { transform: scale(1.08); opacity: 1; }
+        }
+
+        .loading-content-box {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: rgba(12, 16, 30, 0.75);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(88, 101, 242, 0.15);
+            width: 420px;
+            text-align: center;
+        }
+
+        .cyber-ring {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(88, 101, 242, 0.2);
+            border-top: 4px solid #5865F2;
+            border-right: 4px solid #23a55a;
+            border-radius: 50%;
+            animation: spinCyber 1.2s linear infinite;
+        }
+        @keyframes spinCyber {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-title {
+            color: #5865F2;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+        }
+
+        .loading-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #121420;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #2e3352;
+        }
+
+        .loading-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #5865F2, #23a55a);
+            border-radius: 4px;
+            transition: width 0.2s linear;
+        }
+
+        .loading-status-text {
+            color: #a0a5c0;
+            font-size: 0.85rem;
+            min-height: 20px;
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .app-container {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 260px;
+            background-color: #121420;
+            border-right: 1px solid #2a2e45;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+        }
+        .sidebar-top {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .sidebar h2 { font-size: 1.2rem; color: #5865F2; margin-bottom: 15px; }
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #a0a5c0;
+            padding: 12px 15px;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            background-color: #1a1d2e;
+            color: #ffffff;
+            border-left: 4px solid #5865F2;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .header-bar {
+            background: #1a1d2e;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #2a2e45;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .badge-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* --- BLOCS & SECTIONS --- */
+        .update-box, .announcements-box, .global-status-card, .services-uptime-card, .chart-card, .credits-card, .pub-box {
+            background-color: #1a1d2e;
+            border: 1px solid #2a2e45;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .update-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .update-title {
+            font-size: 1.1rem;
+            color: #5865F2;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .update-date { font-size: 0.8rem; color: #a0a5c0; }
+        .update-content {
+            background: #121420;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #2a2e45;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #e1e3ec;
+            white-space: pre-wrap;
+        }
+
+        .admin-update-controls {
+            margin-top: 15px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            border-top: 1px dashed #2a2e45;
+            padding-top: 15px;
+        }
+        .admin-update-controls textarea, .admin-update-controls input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #2e3352;
+            background: #121420;
+            color: white;
+            font-family: inherit;
+        }
+        .admin-update-controls textarea { resize: vertical; height: 80px; }
+        .admin-btn-group { display: flex; gap: 10px; }
+        
+        .btn-save { background: #5865F2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-save:hover { background: #4752c4; }
+        .btn-delete { background: #f23f43; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-delete:hover { background: #d03538; }
+
+        .announcement-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #22263d;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+        .admin-controls { display: flex; gap: 10px; margin-top: 10px; }
+        .admin-controls input {
+            flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #2e3352; background: #121420; color: white;
+        }
+        .btn-add { background: #23a55a; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+        .btn-del { background: #f23f43; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+
+        .global-status-card { display: flex; align-items: center; justify-content: space-between; }
+        .status-info { display: flex; align-items: center; gap: 15px; }
+        .status-dot {
+            width: 18px; height: 18px; border-radius: 50%; background-color: #23a55a; box-shadow: 0 0 10px rgba(35, 165, 90, 0.6);
+        }
+        .status-title { font-size: 1.2rem; font-weight: bold; }
+        .status-sub { font-size: 0.85rem; color: #a0a5c0; }
+
+        .service-row {
+            margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #22263d;
+        }
+        .service-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .service-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.95rem; font-weight: 600; }
+
+        .uptime-bars { display: flex; gap: 2px; height: 32px; align-items: center; }
+        .uptime-bar-day { flex: 1; height: 100%; border-radius: 2px; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
+        .uptime-bar-day:hover { transform: scaleY(1.2); opacity: 0.8; }
+        .uptime-bar-day.operational { background-color: #23a55a; }
+        .uptime-bar-day.degraded { background-color: #f0b232; }
+        .uptime-bar-day.partial_outage { background-color: #f26522; }
+        .uptime-bar-day.major_outage { background-color: #f23f43; }
+        .uptime-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: #a0a5c0; margin-top: 6px; }
+
+        /* MODAL DETAILS */
+        .day-modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 10000;
+        }
+        .day-modal-card {
+            background: #1a1d2e; border: 1px solid #5865F2; padding: 25px; border-radius: 12px; width: 380px; max-width: 90%; color: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+        }
+        .day-modal-card h3 { color: #5865F2; margin-bottom: 12px; font-size: 1.1rem; border-bottom: 1px solid #2a2e45; padding-bottom: 8px; }
+        .day-modal-card p { margin-bottom: 8px; font-size: 0.9rem; color: #d1d5db; }
+        .day-modal-close {
+            margin-top: 15px; width: 100%; padding: 8px; background: #5865F2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
+        }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
     </style>
 </head>
 <body>
 
-    <!-- Phase Pub & Accueil -->
-    <div class="pub-section">
-        <h1>Bienvenue chez les Animateurs RP !</h1>
-        <p>Le meilleur endroit pour vivre des expériences incroyables. Rejoins notre communauté dès maintenant !</p>
-        <br>
-        <a href="METS_TON_LIEN_DISCORD_ICI" class="target="_blank" class="btn-discord">Rejoindre le Discord</a>
+    <!-- ÉCRAN DE CHARGEMENT -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-globe-bg"></div>
+        <div class="loading-content-box">
+            <div class="cyber-ring"></div>
+            <div class="loading-title">INITIALISATION DU RÉSEAU</div>
+            <div class="loading-bar-container">
+                <div id="loadingBarFill" class="loading-bar-fill"></div>
+            </div>
+            <div id="loadingStatusMsg" class="loading-status-text">Connexion aux serveurs... (0%)</div>
+        </div>
     </div>
 
-    <!-- Tableau de bord / Annonces officielles -->
-    <div class="annonces-box">
-        <h2>📢 Tableau de bord & Annonces Officielles</h2>
-        <p><strong>Dernière annonce :</strong></p>
-        <p>{{ data.annonces }}</p>
-        <hr style="border: 0; border-top: 1px solid #444;">
-        <p>Statut des recrutements : 
-            {% if data.recrutement_ouvert %}
-                <span class="status-ouvert">OUVERT 🎉</span>
-            {% else %}
-                <span class="status-ferme">FERMÉ ❌</span>
-            {% endif %}
-        </p>
+    <!-- MODAL DETAILS -->
+    <div id="dayModal" class="day-modal-overlay" onclick="closeDayModal()">
+        <div class="day-modal-card" onclick="event.stopPropagation()">
+            <h3 id="modalServiceName">Service</h3>
+            <p>📅 <strong>Date :</strong> <span id="modalDate">--</span></p>
+            <p>📊 <strong>Statut :</strong> <span id="modalStatus">--</span></p>
+            <p>ℹ️ <strong>Rapport :</strong> <span id="modalDetails">--</span></p>
+            <button class="day-modal-close" onclick="closeDayModal()">Fermer</button>
+        </div>
     </div>
 
-    <!-- Section cachée / Lien d'accès admin -->
-    <a href="/login" class="admin-link">🔒 Accès Administrateur</a>
+    <!-- MODAL CONNEXION -->
+    <div id="loginModal" class="login-overlay">
+        <div class="login-card">
+            <h2>Accès Dashboard</h2>
+            <p style="font-size:0.8rem; color:#a0a5c0; margin-bottom:15px;">Entrez votre pseudo et votre mot de passe</p>
+            <div class="input-group-pass">
+                <input type="text" id="pseudoInput" placeholder="Votre Pseudo">
+            </div>
+            <div class="input-group-pass">
+                <input type="password" id="passInput" placeholder="Mot de passe">
+                <span class="toggle-password" onclick="togglePasswordVisibility()">👁️‍🗨️</span>
+            </div>
+            <button onclick="attemptLogin()">Se connecter</button>
+            <div id="loginError" class="login-error"></div>
+        </div>
+    </div>
 
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-top">
+                <h2>Discord Monitor</h2>
+                <div class="nav-group">
+                    <button class="nav-btn" onclick="switchView('credits', this)">💖 Crédits & Communauté</button>
+                    <button class="nav-btn active" onclick="switchView('dashboard', this)">📊 Tableau de Bord</button>
+                </div>
+            </div>
+            <div>
+                <div style="font-size:0.8rem; color:#a0a5c0; border-top: 1px solid #2a2e45; padding-top: 10px; margin-bottom: 8px;">
+                    Utilisateur : <strong id="userDiscordDisplay" style="color:#5865F2;">--</strong>
+                </div>
+                <div style="font-size:0.8rem; color:#a0a5c0; border-top: 1px solid #2a2e45; padding-top: 10px;">
+                    Rôle : <strong id="userRoleDisplay">--</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="header-bar">
+                <div>
+                    <h1>Statut des Services</h1>
+                </div>
+                <div id="statusBadge" class="badge-status">Chargement...</div>
+            </div>
+
+            <!-- SECTION CRÉDITS & COMMUNAUTÉ -->
+            <div id="view-credits" class="view-section">
+                <h2>💖 Crédits & Remerciements</h2>
+                <div class="credits-card">
+                    <h3>🏆 Équipe & Remerciements</h3>
+                    <p>Créateur & Développeur Principal : <strong>Vous</strong></p>
+                </div>
+                <div class="pub-box">
+                    <h3 id="pubTitleDisplay">🚨 RESCUE HORIZON – JEU ROLEPLAY</h3>
+                    <div class="pub-content" id="pubContentDisplay">Bienvenue sur notre serveur officiel !</div>
+                    <a href="https://discord.gg/" target="_blank" class="btn-save" style="display:inline-block; text-decoration:none;">Rejoindre le Discord</a>
+                </div>
+            </div>
+
+            <!-- SECTION TABLEAU DE BORD -->
+            <div id="view-dashboard" class="view-section active">
+                <div class="update-box">
+                    <div class="update-header">
+                        <div class="update-title">🚀 Mises à Jour</div>
+                        <div class="update-date" id="siteUpdateDate">Dernière modification : --</div>
+                    </div>
+                    <div class="update-content" id="siteUpdateDisplay">Aucune note de mise à jour pour le moment.</div>
+                </div>
+
+                <div class="announcements-box">
+                    <h3>📢 Annonces & Alertes</h3>
+                    <div id="announcementsList"></div>
+                </div>
+
+                <div class="global-status-card">
+                    <div class="status-info">
+                        <div id="statusDot" class="status-dot"></div>
+                        <div>
+                            <div id="statusMainTitle" class="status-title">Tous les systèmes sont opérationnels</div>
+                            <div id="statusSubTitle" class="status-sub">Aucune interruption détectée.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('passInput');
+            passInput.type = passInput.type === 'password' ? 'text' : 'password';
+        }
+
+        function switchView(viewId, btn) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function attemptLogin() {
+            const pseudo = document.getElementById('pseudoInput').value.trim();
+            if(!pseudo) {
+                document.getElementById('loginError').innerText = "Veuillez entrer un pseudo.";
+                return;
+            }
+            document.getElementById('userDiscordDisplay').innerText = pseudo;
+            document.getElementById('userRoleDisplay').innerText = "Membre";
+            document.getElementById('loginModal').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
