@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Statut Discord & Pro</title>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Globe.gl & Three.js pour la Terre 3D -->
-    <script src="https://unpkg.com/three"></script>
-    <script src="https://unpkg.com/globe.gl"></script>
+    <title>Dashboard Statut & Communauté</title>
 
     <style>
         * {
@@ -25,19 +20,19 @@
             overflow-x: hidden;
         }
 
-        /* --- MODAL DE CONNEXION AVEC FOND DÉGRADÉ STYLÉ --- */
-        .login-overlay {
+        /* --- MODAL ACCÈS ADMIN --- */
+        .admin-modal-overlay {
+            display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1b223d 0%, #080a10 70%, #000000 100%);
-            display: flex;
+            background: rgba(0, 0, 0, 0.75);
             justify-content: center;
             align-items: center;
             z-index: 9999;
             backdrop-filter: blur(8px);
         }
-        .login-card {
-            background-color: rgba(26, 29, 46, 0.9);
+        .admin-card {
+            background-color: rgba(26, 29, 46, 0.95);
             padding: 30px;
             border-radius: 12px;
             border: 1px solid rgba(88, 101, 242, 0.4);
@@ -45,14 +40,14 @@
             text-align: center;
             box-shadow: 0 15px 35px rgba(0,0,0,0.9), 0 0 20px rgba(88, 101, 242, 0.2);
         }
-        .login-card h2 { color: #5865F2; margin-bottom: 10px; }
+        .admin-card h2 { color: #5865F2; margin-bottom: 10px; }
         
         .input-group-pass {
             position: relative;
             width: 100%;
             margin-bottom: 12px;
         }
-        .login-card input {
+        .admin-card input {
             width: 100%;
             padding: 10px 40px 10px 10px;
             border-radius: 6px;
@@ -71,7 +66,7 @@
         }
         .toggle-password:hover { color: #fff; }
 
-        .login-card button {
+        .admin-card button {
             width: 100%;
             padding: 10px;
             background: #5865F2;
@@ -82,97 +77,10 @@
             font-weight: bold;
             transition: background 0.2s;
         }
-        .login-card button:hover { background: #4752c4; }
-        .login-error { color: #f23f43; font-size: 0.85rem; margin-top: 10px; }
-
-        /* --- ÉCRAN DE CHARGEMENT --- */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #0a1128 0%, #03050c 70%, #000000 100%);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .loading-globe-bg {
-            position: absolute;
-            width: 450px;
-            height: 450px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(88, 101, 242, 0.15) 0%, rgba(35, 165, 90, 0.05) 50%, transparent 80%);
-            box-shadow: 0 0 60px rgba(88, 101, 242, 0.2), inset 0 0 40px rgba(88, 101, 242, 0.3);
-            animation: pulseGlobe 4s ease-in-out infinite alternate;
-            z-index: 1;
-        }
-        @keyframes pulseGlobe {
-            0% { transform: scale(0.95); opacity: 0.7; }
-            100% { transform: scale(1.08); opacity: 1; }
-        }
-
-        .loading-content-box {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            background: rgba(12, 16, 30, 0.75);
-            padding: 40px;
-            border-radius: 16px;
-            border: 1px solid rgba(88, 101, 242, 0.3);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(88, 101, 242, 0.15);
-            width: 420px;
-            text-align: center;
-        }
-
-        .cyber-ring {
-            width: 70px;
-            height: 70px;
-            border: 4px solid rgba(88, 101, 242, 0.2);
-            border-top: 4px solid #5865F2;
-            border-right: 4px solid #23a55a;
-            border-radius: 50%;
-            animation: spinCyber 1.2s linear infinite;
-        }
-        @keyframes spinCyber {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-title {
-            color: #5865F2;
-            font-size: 1.2rem;
-            font-weight: bold;
-            letter-spacing: 1.5px;
-        }
-
-        .loading-bar-container {
-            width: 100%;
-            height: 8px;
-            background: #121420;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid #2e3352;
-        }
-
-        .loading-bar-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #5865F2, #23a55a);
-            border-radius: 4px;
-            transition: width 0.2s linear;
-        }
-
-        .loading-status-text {
-            color: #a0a5c0;
-            font-size: 0.85rem;
-            min-height: 20px;
-        }
+        .admin-card button:hover { background: #4752c4; }
+        .admin-error { color: #f23f43; font-size: 0.85rem; margin-top: 10px; }
+        .admin-close-btn { background: #2a2e45 !important; margin-top: 8px !important; }
+        .admin-close-btn:hover { background: #3a3f5c !important; }
 
         /* --- LAYOUT PRINCIPAL --- */
         .app-container {
@@ -239,10 +147,12 @@
             border-radius: 20px;
             font-weight: bold;
             font-size: 0.9rem;
+            background-color: #23a55a;
+            color: white;
         }
 
         /* --- BLOCS & SECTIONS --- */
-        .update-box, .announcements-box, .global-status-card, .services-uptime-card, .chart-card, .credits-card, .pub-box {
+        .update-box, .announcements-box, .global-status-card, .credits-card, .pub-box {
             background-color: #1a1d2e;
             border: 1px solid #2a2e45;
             border-radius: 12px;
@@ -298,8 +208,6 @@
         
         .btn-save { background: #5865F2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-save:hover { background: #4752c4; }
-        .btn-delete { background: #f23f43; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-delete:hover { background: #d03538; }
 
         .announcement-item {
             display: flex;
@@ -310,7 +218,7 @@
             border-radius: 6px;
             margin-top: 8px;
         }
-        .admin-controls { display: flex; gap: 10px; margin-top: 10px; }
+        .admin-controls { display: none; gap: 10px; margin-top: 10px; }
         .admin-controls input {
             flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #2e3352; background: #121420; color: white;
         }
@@ -325,79 +233,24 @@
         .status-title { font-size: 1.2rem; font-weight: bold; }
         .status-sub { font-size: 0.85rem; color: #a0a5c0; }
 
-        .service-row {
-            margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #22263d;
-        }
-        .service-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .service-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.95rem; font-weight: 600; }
-
-        .uptime-bars { display: flex; gap: 2px; height: 32px; align-items: center; }
-        .uptime-bar-day { flex: 1; height: 100%; border-radius: 2px; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
-        .uptime-bar-day:hover { transform: scaleY(1.2); opacity: 0.8; }
-        .uptime-bar-day.operational { background-color: #23a55a; }
-        .uptime-bar-day.degraded { background-color: #f0b232; }
-        .uptime-bar-day.partial_outage { background-color: #f26522; }
-        .uptime-bar-day.major_outage { background-color: #f23f43; }
-        .uptime-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: #a0a5c0; margin-top: 6px; }
-
-        /* MODAL DETAILS */
-        .day-modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 10000;
-        }
-        .day-modal-card {
-            background: #1a1d2e; border: 1px solid #5865F2; padding: 25px; border-radius: 12px; width: 380px; max-width: 90%; color: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.8);
-        }
-        .day-modal-card h3 { color: #5865F2; margin-bottom: 12px; font-size: 1.1rem; border-bottom: 1px solid #2a2e45; padding-bottom: 8px; }
-        .day-modal-card p { margin-bottom: 8px; font-size: 0.9rem; color: #d1d5db; }
-        .day-modal-close {
-            margin-top: 15px; width: 100%; padding: 8px; background: #5865F2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
-        }
-
         .view-section { display: none; }
         .view-section.active { display: block; }
     </style>
 </head>
 <body>
 
-    <!-- ÉCRAN DE CHARGEMENT -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-globe-bg"></div>
-        <div class="loading-content-box">
-            <div class="cyber-ring"></div>
-            <div class="loading-title">INITIALISATION DU RÉSEAU</div>
-            <div class="loading-bar-container">
-                <div id="loadingBarFill" class="loading-bar-fill"></div>
-            </div>
-            <div id="loadingStatusMsg" class="loading-status-text">Connexion aux serveurs... (0%)</div>
-        </div>
-    </div>
-
-    <!-- MODAL DETAILS -->
-    <div id="dayModal" class="day-modal-overlay" onclick="closeDayModal()">
-        <div class="day-modal-card" onclick="event.stopPropagation()">
-            <h3 id="modalServiceName">Service</h3>
-            <p>📅 <strong>Date :</strong> <span id="modalDate">--</span></p>
-            <p>📊 <strong>Statut :</strong> <span id="modalStatus">--</span></p>
-            <p>ℹ️ <strong>Rapport :</strong> <span id="modalDetails">--</span></p>
-            <button class="day-modal-close" onclick="closeDayModal()">Fermer</button>
-        </div>
-    </div>
-
-    <!-- MODAL CONNEXION -->
-    <div id="loginModal" class="login-overlay">
-        <div class="login-card">
-            <h2>Accès Dashboard</h2>
-            <p style="font-size:0.8rem; color:#a0a5c0; margin-bottom:15px;">Entrez votre pseudo et votre mot de passe</p>
+    <!-- MODAL ACCÈS ADMIN -->
+    <div id="adminModal" class="admin-modal-overlay">
+        <div class="admin-card">
+            <h2>Sécurité Admin</h2>
+            <p style="font-size:0.8rem; color:#a0a5c0; margin-bottom:15px;">Entrez le mot de passe administrateur</p>
             <div class="input-group-pass">
-                <input type="text" id="pseudoInput" placeholder="Votre Pseudo">
-            </div>
-            <div class="input-group-pass">
-                <input type="password" id="passInput" placeholder="Mot de passe">
+                <input type="password" id="adminPassInput" placeholder="Mot de passe">
                 <span class="toggle-password" onclick="togglePasswordVisibility()">👁️‍🗨️</span>
             </div>
-            <button onclick="attemptLogin()">Se connecter</button>
-            <div id="loginError" class="login-error"></div>
+            <button onclick="verifyAdminPassword()">Valider</button>
+            <button class="admin-close-btn" onclick="closeAdminModal()">Annuler</button>
+            <div id="adminLoginError" class="admin-error"></div>
         </div>
     </div>
 
@@ -405,18 +258,20 @@
         <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-top">
-                <h2>Discord Monitor</h2>
+                <h2>Serveur Monitor</h2>
                 <div class="nav-group">
-                    <button class="nav-btn" onclick="switchView('credits', this)">💖 Crédits & Communauté</button>
                     <button class="nav-btn active" onclick="switchView('dashboard', this)">📊 Tableau de Bord</button>
+                    <button class="nav-btn" onclick="switchView('credits', this)">💖 Crédits & Communauté</button>
+                    <!-- BOUTON ACCÈS ADMIN -->
+                    <button class="nav-btn" onclick="openAdminModal()" style="color: #f0b232; border-left: 3px solid #f0b232; margin-top: 10px;">🔐 Accès Admin</button>
                 </div>
             </div>
             <div>
                 <div style="font-size:0.8rem; color:#a0a5c0; border-top: 1px solid #2a2e45; padding-top: 10px; margin-bottom: 8px;">
-                    Utilisateur : <strong id="userDiscordDisplay" style="color:#5865F2;">--</strong>
+                    Statut : <strong style="color:#23a55a;">En ligne</strong>
                 </div>
                 <div style="font-size:0.8rem; color:#a0a5c0; border-top: 1px solid #2a2e45; padding-top: 10px;">
-                    Rôle : <strong id="userRoleDisplay">--</strong>
+                    Rôle : <strong id="userRoleDisplay" style="color:#5865F2;">Membre</strong>
                 </div>
             </div>
         </div>
@@ -425,23 +280,9 @@
         <div class="main-content">
             <div class="header-bar">
                 <div>
-                    <h1>Statut des Services</h1>
+                    <h1>Tableau de Bord</h1>
                 </div>
-                <div id="statusBadge" class="badge-status">Chargement...</div>
-            </div>
-
-            <!-- SECTION CRÉDITS & COMMUNAUTÉ -->
-            <div id="view-credits" class="view-section">
-                <h2>💖 Crédits & Remerciements</h2>
-                <div class="credits-card">
-                    <h3>🏆 Équipe & Remerciements</h3>
-                    <p>Créateur & Développeur Principal : <strong>Vous</strong></p>
-                </div>
-                <div class="pub-box">
-                    <h3 id="pubTitleDisplay">🚨 RESCUE HORIZON – JEU ROLEPLAY</h3>
-                    <div class="pub-content" id="pubContentDisplay">Bienvenue sur notre serveur officiel !</div>
-                    <a href="https://discord.gg/" target="_blank" class="btn-save" style="display:inline-block; text-decoration:none;">Rejoindre le Discord</a>
-                </div>
+                <div id="statusBadge" class="badge-status">Opérationnel</div>
             </div>
 
             <!-- SECTION TABLEAU DE BORD -->
@@ -452,48 +293,126 @@
                         <div class="update-date" id="siteUpdateDate">Dernière modification : --</div>
                     </div>
                     <div class="update-content" id="siteUpdateDisplay">Aucune note de mise à jour pour le moment.</div>
+                    
+                    <!-- Contrôles admin cachés par défaut -->
+                    <div id="adminUpdateControls" class="admin-update-controls">
+                        <input type="text" id="inputUpdateDate" placeholder="Date (ex: 09 Juin 2026)">
+                        <textarea id="inputUpdateText" placeholder="Écrivez la note de mise à jour..."></textarea>
+                        <div class="admin-btn-group">
+                            <button class="btn-save" onclick="saveUpdateNote()">Enregistrer la mise à jour</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="announcements-box">
                     <h3>📢 Annonces & Alertes</h3>
-                    <div id="announcementsList"></div>
+                    <div id="announcementsList">
+                        <div class="announcement-item"><span>Bienvenue sur notre espace !</span></div>
+                    </div>
+                    <!-- Contrôles admin pour annonces -->
+                    <div id="adminAnnouncementControls" class="admin-controls">
+                        <input type="text" id="newAnnouncementInput" placeholder="Nouvelle annonce...">
+                        <button class="btn-add" onclick="addAnnouncement()">Ajouter</button>
+                    </div>
                 </div>
 
                 <div class="global-status-card">
                     <div class="status-info">
                         <div id="statusDot" class="status-dot"></div>
                         <div>
-                            <div id="statusMainTitle" class="status-title">Tous les systèmes sont opérationnels</div>
-                            <div id="statusSubTitle" class="status-sub">Aucune interruption détectée.</div>
+                            <div id="statusMainTitle" class="status-title">Tous les systèmes fonctionnent normalement</div>
+                            <div id="statusSubTitle" class="status-sub">Aucune perturbation constatée.</div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- SECTION CRÉDITS & COMMUNAUTÉ -->
+            <div id="view-credits" class="view-section">
+                <h2>💖 Crédits & Remerciements</h2>
+                <div class="credits-card">
+                    <h3>🏆 Équipe</h3>
+                    <p>Espace géré et administré par la communauté.</p>
+                </div>
+                <div class="pub-box">
+                    <h3 id="pubTitleDisplay">🚨 REJOIGNEZ-NOUS</h3>
+                    <div class="pub-content" id="pubContentDisplay">Retrouvez-nous directement sur notre serveur principal !</div>
+                    <a href="https://discord.gg/" target="_blank" class="btn-save" style="display:inline-block; text-decoration:none; margin-top:10px;">Lien d'invitation</a>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        let isAdmin = false;
+
         function togglePasswordVisibility() {
-            const passInput = document.getElementById('passInput');
+            const passInput = document.getElementById('adminPassInput');
             passInput.type = passInput.type === 'password' ? 'text' : 'password';
         }
 
         function switchView(viewId, btn) {
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                if(!b.textContent.includes('Accès Admin')) b.classList.remove('active');
+            });
             document.getElementById('view-' + viewId).classList.add('active');
-            btn.classList.add('active');
+            if(!btn.textContent.includes('Accès Admin')) btn.classList.add('active');
         }
 
-        function attemptLogin() {
-            const pseudo = document.getElementById('pseudoInput').value.trim();
-            if(!pseudo) {
-                document.getElementById('loginError').innerText = "Veuillez entrer un pseudo.";
+        function openAdminModal() {
+            if(isAdmin) {
+                alert("Vous êtes déjà connecté en tant qu'Administrateur !");
                 return;
             }
-            document.getElementById('userDiscordDisplay').innerText = pseudo;
-            document.getElementById('userRoleDisplay').innerText = "Membre";
-            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('adminModal').style.display = 'flex';
+            document.getElementById('adminPassInput').value = '';
+            document.getElementById('adminLoginError').innerText = '';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        function verifyAdminPassword() {
+            const pass = document.getElementById('adminPassInput').value;
+            if(pass === "gazpartoutetjuleslesbg") {
+                isAdmin = true;
+                document.getElementById('userRoleDisplay').innerText = "Administrateur";
+                document.getElementById('userRoleDisplay').style.color = "#23a55a";
+                
+                // Afficher les outils d'administration
+                document.getElementById('adminUpdateControls').style.display = 'flex';
+                document.getElementById('adminAnnouncementControls').style.display = 'flex';
+                
+                closeAdminModal();
+                alert("Accès Administrateur accordé avec succès !");
+            } else {
+                document.getElementById('adminLoginError').innerText = "Mot de passe incorrect.";
+            }
+        }
+
+        function saveUpdateNote() {
+            if(!isAdmin) return;
+            const newDate = document.getElementById('inputUpdateDate').value;
+            const newText = document.getElementById('inputUpdateText').value;
+            
+            if(newDate) document.getElementById('siteUpdateDate').innerText = "Dernière modification : " + newDate;
+            if(newText) document.getElementById('siteUpdateDisplay').innerText = newText;
+            alert("Mise à jour enregistrée !");
+        }
+
+        function addAnnouncement() {
+            if(!isAdmin) return;
+            const text = document.getElementById('newAnnouncementInput').value.trim();
+            if(!text) return;
+            
+            const list = document.getElementById('announcementsList');
+            const item = document.createElement('div');
+            item.className = 'announcement-item';
+            item.innerHTML = `<span>${text}</span> <button class="btn-del" onclick="this.parentElement.remove()">X</button>`;
+            list.appendChild(item);
+            document.getElementById('newAnnouncementInput').value = '';
         }
     </script>
 </body>
