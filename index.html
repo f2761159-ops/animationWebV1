@@ -176,9 +176,9 @@
             white-space: pre-wrap;
         }
 
-        /* --- BOUTONS ADMINS GENERAUX --- */
+        /* --- ÉLÉMENTS RÉSERVÉS AUX ADMINS (MASQUÉS PAR DÉFAUT) --- */
         .admin-only {
-            display: none; /* Affiché uniquement aux admins */
+            display: none !important;
         }
 
         .admin-controls-box {
@@ -308,7 +308,7 @@
                     </div>
                     <div class="update-content" id="siteUpdateDisplay">Bienvenue sur le tableau de bord de la communauté !</div>
                     
-                    <!-- Contrôles Admin -->
+                    <!-- Contrôles Admin (Cachés par défaut) -->
                     <div class="admin-only admin-controls-box" id="adminUpdateControls">
                         <input type="text" id="inputUpdateDate" placeholder="Date (ex: 09 Août 2026)">
                         <textarea id="inputUpdateText" placeholder="Écrivez le contenu de la mise à jour..."></textarea>
@@ -329,7 +329,7 @@
                         </div>
                     </div>
 
-                    <!-- Contrôles Admin -->
+                    <!-- Contrôles Admin (Cachés par défaut) -->
                     <div class="admin-only admin-controls-box" id="adminAnnouncementControls">
                         <input type="text" id="newAnnouncementInput" placeholder="Saisir un nouvel avis/annonce...">
                         <div>
@@ -349,7 +349,6 @@
                     <p style="color:#a0a5c0; font-size:0.9rem; margin-top:4px;">Retrouvez ici toutes les informations concernant le rôle et les projets de l'équipe d'animation !</p>
                     
                     <div id="animCardsContainer">
-                        <!-- Exemple de carte d'animation par défaut -->
                         <div class="anim-card-item">
                             <h4>
                                 🎭 Rôle de l'équipe Animation
@@ -362,7 +361,7 @@
                         </div>
                     </div>
 
-                    <!-- Contrôles Admin pour Ajouter une Info Animation -->
+                    <!-- Contrôles Admin pour Ajouter une Info Animation (Cachés par défaut) -->
                     <div class="admin-only admin-controls-box" id="adminAnimControls">
                         <h4>➕ Ajouter une information d'animation</h4>
                         <input type="text" id="newAnimTitle" placeholder="Titre de l'information / de l'activité...">
@@ -378,7 +377,7 @@
                     <h3>🏆 Équipe & Crédits</h3>
                     <p id="creditsTextDisplay" style="margin-top:8px; line-height:1.5;">Espace officiel géré et administré par l'équipe de modération et d'animation de la communauté.</p>
                     
-                    <!-- Contrôles Admin -->
+                    <!-- Contrôles Admin (Cachés par défaut) -->
                     <div class="admin-only admin-controls-box" id="adminCreditsControls">
                         <textarea id="inputCreditsText" placeholder="Modifier la description de l'équipe..."></textarea>
                         <div class="btn-group">
@@ -415,7 +414,6 @@
             document.getElementById('view-' + viewId).classList.add('active');
             if(!btn.textContent.includes('Accès Admin')) btn.classList.add('active');
 
-            // Mise à jour du titre dynamique
             const titleElement = document.getElementById('pageTitle');
             if(viewId === 'dashboard') titleElement.innerText = "Tableau de Bord";
             if(viewId === 'credits') titleElement.innerText = "Crédits & Animation";
@@ -442,13 +440,13 @@
                 document.getElementById('userRoleDisplay').innerText = "Administrateur";
                 document.getElementById('userRoleDisplay').style.color = "#23a55a";
                 
-                // Révéler tous les éléments réservés aux administrateurs
+                // Révéler les outils d'administration en modifiant leur affichage en bloc/flex
                 document.querySelectorAll('.admin-only').forEach(el => {
-                    el.style.display = 'flex';
+                    el.style.setProperty('display', 'flex', 'important');
                 });
 
                 closeAdminModal();
-                alert("Mode Administrateur activé ! Vous pouvez maintenant tout modifier.");
+                alert("Mode Administrateur activé avec succès !");
             } else {
                 document.getElementById('adminLoginError').innerText = "Mot de passe incorrect.";
             }
@@ -456,7 +454,6 @@
 
         /* --- FONCTIONS DE GESTION ADMINISTRATIVE --- */
 
-        // 1. Mises à jour
         function saveUpdateNote() {
             if(!isAdmin) return;
             const newDate = document.getElementById('inputUpdateDate').value;
@@ -474,7 +471,6 @@
             }
         }
 
-        // 2. Annonces
         function addAnnouncement() {
             if(!isAdmin) return;
             const text = document.getElementById('newAnnouncementInput').value.trim();
@@ -483,12 +479,11 @@
             const list = document.getElementById('announcementsList');
             const item = document.createElement('div');
             item.className = 'announcement-item';
-            item.innerHTML = `<span>${text}</span> <button class="btn-del admin-only" style="display:flex;" onclick="this.parentElement.remove()">Supprimer</button>`;
+            item.innerHTML = `<span>${text}</span> <button class="btn-del admin-only" style="display:flex !important;" onclick="this.parentElement.remove()">Supprimer</button>`;
             list.appendChild(item);
             document.getElementById('newAnnouncementInput').value = '';
         }
 
-        // 3. Section Animation
         function addAnimCard() {
             if(!isAdmin) return;
             const title = document.getElementById('newAnimTitle').value.trim();
@@ -505,7 +500,7 @@
             card.innerHTML = `
                 <h4>
                     📌 ${title}
-                    <div class="btn-group admin-only" style="display:flex;">
+                    <div class="btn-group admin-only" style="display:flex !important;">
                         <button class="btn-edit" onclick="editAnimCard(this)">Modifier</button>
                         <button class="btn-del" onclick="this.closest('.anim-card-item').remove()">Supprimer</button>
                     </div>
@@ -534,7 +529,6 @@
             card.querySelector('p').innerText = newDesc;
         }
 
-        // 4. Édition Crédits / Équipe
         function saveCreditsText() {
             if(!isAdmin) return;
             const text = document.getElementById('inputCreditsText').value.trim();
