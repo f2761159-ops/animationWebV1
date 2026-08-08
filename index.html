@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Animateurs Jeux RP</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #121212; color: #fff; text-align: center; }
+        .pub-section { background: #1f1f1f; padding: 30px; border-radius: 10px; margin-bottom: 20px; }
+        .btn-discord { background: #5865F2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .annonces-box { background: #262626; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .status-ouvert { color: #2ecc71; font-weight: bold; }
+        .status-ferme { color: #e74c3c; font-weight: bold; }
+        .admin-link { margin-top: 40px; display: block; color: #888; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <!-- Phase Pub & Accueil -->
+    <div class="pub-section">
+        <h1>Bienvenue chez les Animateurs RP !</h1>
+        <p>Le meilleur endroit pour vivre des expériences incroyables. Rejoins notre communauté dès maintenant !</p>
+        <br>
+        <a href="METS_TON_LIEN_DISCORD_ICI" class="target="_blank" class="btn-discord">Rejoindre le Discord</a>
+    </div>
+
+    <!-- Tableau de bord / Annonces officielles -->
+    <div class="annonces-box">
+        <h2>📢 Tableau de bord & Annonces Officielles</h2>
+        <p><strong>Dernière annonce :</strong></p>
+        <p>{{ data.annonces }}</p>
+        <hr style="border: 0; border-top: 1px solid #444;">
+        <p>Statut des recrutements : 
+            {% if data.recrutement_ouvert %}
+                <span class="status-ouvert">OUVERT 🎉</span>
+            {% else %}
+                <span class="status-ferme">FERMÉ ❌</span>
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Section cachée / Lien d'accès admin -->
+    <a href="/login" class="admin-link">🔒 Accès Administrateur</a>
+
+</body>
+</html>
