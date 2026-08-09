@@ -6,640 +6,108 @@
     <title>Dashboard Communauté</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f111a;
-            color: #ffffff;
-            min-height: 100vh;
-            display: flex;
-            overflow-x: hidden;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background-color: #0f111a; color: #fff; min-height: 100vh; }
 
-        /* --- MODAL ACCÈS SÉCURISÉ --- */
-        .admin-modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            backdrop-filter: blur(8px);
-        }
-        .admin-card {
-            background-color: rgba(26, 29, 46, 0.95);
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid rgba(88, 101, 242, 0.4);
-            width: 380px;
-            text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.9), 0 0 20px rgba(88, 101, 242, 0.2);
-        }
-        .admin-card h2 { color: #5865F2; margin-bottom: 10px; }
-        
-        .input-group-pass {
-            position: relative;
-            width: 100%;
-            margin-bottom: 12px;
-        }
-        .admin-card input {
-            width: 100%;
-            padding: 10px 40px 10px 10px;
-            border-radius: 6px;
-            border: 1px solid #2e3352;
-            background: #121420;
-            color: #fff;
-        }
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #a0a5c0;
-            font-size: 0.9rem;
-        }
-        .toggle-password:hover { color: #fff; }
-
-        .admin-card button {
-            width: 100%;
-            padding: 10px;
-            background: #5865F2;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .admin-card button:hover { background: #4752c4; }
-        .admin-error { color: #f23f43; font-size: 0.85rem; margin-top: 10px; }
-        .admin-close-btn { background: #2a2e45 !important; margin-top: 8px !important; }
-        .admin-close-btn:hover { background: #3a3f5c !important; }
-
-        /* --- LAYOUT PRINCIPAL --- */
-        .app-container {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-        }
-        .sidebar {
-            width: 260px;
+        /* --- NAVIGATION SUPÉRIEURE (MENU EN HAUT) --- */
+        .top-nav {
             background-color: #121420;
-            border-right: 1px solid #2a2e45;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            z-index: 10;
-        }
-        .sidebar-top {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .sidebar h2 { font-size: 1.2rem; color: #5865F2; margin-bottom: 15px; }
-        .nav-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .nav-btn {
-            background: none;
-            border: none;
-            color: #a0a5c0;
-            padding: 12px 15px;
-            text-align: left;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: 0.2s;
-        }
-        .nav-btn:hover, .nav-btn.active {
-            background-color: #1a1d2e;
-            color: #ffffff;
-            border-left: 4px solid #5865F2;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
-
-        .header-bar {
-            background: #1a1d2e;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #2a2e45;
-            margin-bottom: 20px;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        /* --- BLOCS & SECTIONS --- */
-        .update-box, .announcements-box, .credits-card, .pub-box, .info-anim-box, .founder-panel-box {
-            background-color: #1a1d2e;
-            border: 1px solid #2a2e45;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .update-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .update-title {
-            font-size: 1.1rem;
-            color: #5865F2;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .update-date { font-size: 0.8rem; color: #a0a5c0; }
-        .update-content {
-            background: #121420;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #2a2e45;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: #e1e3ec;
-            white-space: pre-wrap;
-        }
-
-        /* --- RESTRICTIONS DE RÔLES (MASQUÉS PAR DÉFAUT) --- */
-        .admin-only, .founder-only, .logged-in-only {
-            display: none !important;
-        }
-
-        .admin-controls-box, .founder-controls-box {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px dashed #2a2e45;
-            display: flex;
-            flex-direction: column;
+            border-bottom: 1px solid #2a2e45;
+            flex-wrap: wrap;
             gap: 10px;
         }
+        .nav-menu { display: flex; gap: 15px; }
+        .nav-btn { background: none; border: none; color: #a0a5c0; cursor: pointer; padding: 8px; }
+        .nav-btn.active { color: #fff; border-bottom: 2px solid #5865F2; }
 
-        .admin-controls-box input, .admin-controls-box textarea,
-        .founder-controls-box input, .founder-controls-box textarea, .founder-controls-box select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #2e3352;
-            background: #121420;
-            color: white;
-            font-family: inherit;
-        }
-        .admin-controls-box textarea, .founder-controls-box textarea { resize: vertical; height: 70px; }
-
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        /* --- RESPONSIVITÉ POUR TÉLÉPHONE --- */
+        .app-container { padding: 20px; max-width: 1200px; margin: auto; }
         
-        .btn-save { background: #5865F2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-save:hover { background: #4752c4; }
-        
-        .btn-add { background: #23a55a; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-add:hover { background: #1f924e; }
-
-        .btn-edit { background: #f0b232; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-edit:hover { background: #d99f2b; }
-
-        .btn-del { background: #f23f43; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-del:hover { background: #d13438; }
-
-        .btn-founder { background: #df5353; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-founder:hover { background: #c54343; }
-
-        /* LISTE DE CARTES D'ANIMATION */
-        .anim-card-item {
-            background: #121420;
-            border: 1px solid #2a2e45;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 12px;
-            position: relative;
-        }
-        .anim-card-item h4 {
-            color: #f0b232;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .anim-card-item p {
-            color: #d1d5db;
-            font-size: 0.95rem;
-            line-height: 1.4;
-            white-space: pre-wrap;
+        @media (max-width: 600px) {
+            .top-nav { flex-direction: column; text-align: center; }
+            .nav-menu { gap: 5px; }
+            .founder-panel-box > div { grid-template-columns: 1fr !important; }
         }
 
-        .announcement-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 14px;
-            background: #22263d;
-            border-radius: 6px;
-            margin-top: 8px;
-        }
-
+        /* --- RESTE DU STYLE --- */
         .view-section { display: none; }
         .view-section.active { display: block; }
+        .update-box, .announcements-box { background: #1a1d2e; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        
+        /* Contrôles masqués */
+        .admin-only, .founder-only, .logged-in-only { display: none; }
+        
+        /* Boutons */
+        .btn-save { background: #5865F2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- MODAL ACCÈS SÉCURISÉ -->
-    <div id="adminModal" class="admin-modal-overlay">
-        <div class="admin-card">
-            <h2>Connexion Sécurisée</h2>
-            <p style="font-size:0.8rem; color:#a0a5c0; margin-bottom:15px;">Entrez votre mot de passe Admin ou Fondateur</p>
-            <div class="input-group-pass">
-                <input type="password" id="adminPassInput" placeholder="Mot de passe">
-                <span class="toggle-password" onclick="togglePasswordVisibility()">👁️‍🗨️</span>
-            </div>
-            <button onclick="verifyPassword()">Se connecter</button>
-            <button class="admin-close-btn" onclick="closeAdminModal()">Annuler</button>
-            <div id="adminLoginError" class="admin-error"></div>
+    <!-- MENU EN HAUT -->
+    <nav class="top-nav">
+        <div style="font-weight: bold; color: #5865F2;">Espace Communauté</div>
+        <div class="nav-menu">
+            <button class="nav-btn active" onclick="switchView('dashboard', this)">Dashboard</button>
+            <button class="nav-btn" onclick="switchView('credits', this)">Crédits</button>
+            <button id="btnLoginNav" class="nav-btn" onclick="openAdminModal()">Connexion</button>
+            <button id="btnLogoutNav" class="logged-in-only nav-btn" onclick="logoutStaff()" style="color: #f23f43;">Déconnexion</button>
         </div>
-    </div>
+        <div id="maintenanceBadge" style="background: #23a55a; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">Statut : Public</div>
+    </nav>
 
     <div class="app-container">
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <div class="sidebar-top">
-                <h2>Espace Communauté</h2>
-                <div class="nav-group">
-                    <button class="nav-btn active" onclick="switchView('dashboard', this)">📊 Tableau de Bord</button>
-                    <button class="nav-btn" onclick="switchView('credits', this)">💖 Crédits & Animation</button>
-                    
-                    <!-- BOUTON CONNEXION (Visible si déconnecté) -->
-                    <button id="btnLoginNav" class="nav-btn" onclick="openAdminModal()" style="color: #f0b232; border-left: 3px solid #f0b232; margin-top: 10px;">🔐 Connexion Staff</button>
-                    
-                    <!-- BOUTON DÉCONNEXION (Visible uniquement si connecté en Admin ou Fondateur) -->
-                    <button id="btnLogoutNav" class="logged-in-only nav-btn" onclick="logoutStaff()" style="color: #f23f43; border-left: 3px solid #f23f43; margin-top: 10px;">🚪 Déconnexion</button>
-                </div>
-            </div>
-            <div>
-                <div style="font-size:0.8rem; color:#a0a5c0; border-top: 1px solid #2a2e45; padding-top: 10px; margin-bottom: 8px;">
-                    Statut : <strong style="color:#23a55a;">En ligne</strong>
-                </div>
-                <div style="font-size:0.8rem; color:#a0a5c0; border-top: 1px solid #2a2e45; padding-top: 10px;">
-                    Rôle : <strong id="userRoleDisplay" style="color:#5865F2;">Membre</strong>
+        <!-- Dashboard -->
+        <div id="view-dashboard" class="view-section active">
+            <h1>Bienvenue</h1>
+            <div class="update-box">
+                <p>Contenu principal ici...</p>
+                <div class="founder-only">
+                    <button class="btn-save" onclick="toggleMaintenance()">Toggle Maintenance</button>
                 </div>
             </div>
         </div>
 
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-            <div class="header-bar">
-                <h1 id="pageTitle">Tableau de Bord</h1>
-                <div id="maintenanceBadge" style="font-size: 0.85rem; background: #23a55a; padding: 4px 10px; border-radius: 4px; font-weight: bold;">Statut : Public Actif</div>
-            </div>
-
-            <!-- SECTION TABLEAU DE BORD -->
-            <div id="view-dashboard" class="view-section active">
-                
-                <!-- BOX MISES À JOUR -->
-                <div class="update-box">
-                    <div class="update-header">
-                        <div class="update-title">🚀 Mises à Jour</div>
-                        <div class="update-date" id="siteUpdateDate">Dernière modification : 09 Août 2026</div>
-                    </div>
-                    <div class="update-content" id="siteUpdateDisplay">Bienvenue sur le tableau de bord de la communauté !</div>
-                    
-                    <!-- Contrôles Exclusifs Fondateur -->
-                    <div class="founder-only founder-controls-box" id="founderUpdateControls">
-                        <p style="color: #df5353; font-size: 0.85rem; font-weight: bold;">⚙️ Contrôles exclusifs du Fondateur (Mises à jour)</p>
-                        <input type="text" id="inputUpdateDate" placeholder="Date (ex: 09 Août 2026)">
-                        <textarea id="inputUpdateText" placeholder="Écrivez le contenu de la mise à jour globale du site..."></textarea>
-                        <div class="btn-group">
-                            <button class="btn-founder" onclick="saveUpdateNote()">Publier la mise à jour</button>
-                            <button class="btn-del" onclick="clearUpdateNote()">Effacer la note</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BOX ANNONCES -->
-                <div class="announcements-box">
-                    <h3>📢 Annonces & Alertes</h3>
-                    <div id="announcementsList">
-                        <div class="announcement-item">
-                            <span>Bienvenue sur notre espace !</span>
-                            <button class="btn-del admin-only" onclick="this.parentElement.remove()">Supprimer</button>
-                        </div>
-                    </div>
-
-                    <!-- Contrôles Admin / Fondateur -->
-                    <div class="admin-only admin-controls-box" id="adminAnnouncementControls">
-                        <input type="text" id="newAnnouncementInput" placeholder="Saisir un nouvel avis/annonce...">
-                        <div>
-                            <button class="btn-add" onclick="addAnnouncement()">Ajouter l'annonce</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PANNEAU DE CONTRÔLE AVANCÉ (EXCLUSIF FONDATEUR) -->
-                <div class="founder-panel-box founder-only" id="founderExtraPanel">
-                    <h3 style="color: #df5353; margin-bottom: 10px;">👑 Console de Commandes du Fondateur</h3>
-                    <p style="color: #a0a5c0; font-size: 0.9rem; margin-bottom: 15px;">Outils pratiques et efficaces pour piloter l'ensemble de la plateforme.</p>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div style="background: #121420; padding: 12px; border-radius: 8px; border: 1px solid #2a2e45;">
-                            <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: #fff;">🔒 Mode Maintenance du Site</h4>
-                            <p style="font-size: 0.8rem; color: #a0a5c0; margin-bottom: 10px;">Bloque l'accès aux visiteurs extérieurs.</p>
-                            <button class="btn-founder" id="btnToggleMaint" onclick="toggleMaintenance()">Activer la maintenance</button>
-                        </div>
-
-                        <div style="background: #121420; padding: 12px; border-radius: 8px; border: 1px solid #2a2e45;">
-                            <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: #fff;">🧹 Vider les Annonces</h4>
-                            <p style="font-size: 0.8rem; color: #a0a5c0; margin-bottom: 10px;">Nettoie instantanément le flux d'annonces.</p>
-                            <button class="btn-del" onclick="clearAllAnnouncements()">Tout supprimer</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- SECTION CRÉDITS & ANIMATION -->
-            <div id="view-credits" class="view-section">
-                
-                <!-- SECTION INFORMATIONS ÉQUIPE D'ANIMATION -->
-                <div class="info-anim-box">
-                    <h3>🎉 Équipe d'Animation & Activités</h3>
-                    <p style="color:#a0a5c0; font-size:0.9rem; margin-top:4px;">Retrouvez ici toutes les informations concernant le rôle et les projets de l'équipe d'animation !</p>
-                    
-                    <div id="animCardsContainer">
-                        <div class="anim-card-item">
-                            <h4>
-                                🎭 Rôle de l'équipe Animation
-                                <div class="btn-group admin-only">
-                                    <button class="btn-edit" onclick="editAnimCard(this)">Modifier</button>
-                                    <button class="btn-del" onclick="this.closest('.anim-card-item').remove()">Supprimer</button>
-                                </div>
-                            </h4>
-                            <p>L'équipe d'animation organise quotidiennement des événements, mini-jeux, et concours afin de dynamiser la communauté et créer une ambiance conviviale !</p>
-                        </div>
-                    </div>
-
-                    <!-- Contrôles Admin / Fondateur -->
-                    <div class="admin-only admin-controls-box" id="adminAnimControls">
-                        <h4>➕ Ajouter une information d'animation</h4>
-                        <input type="text" id="newAnimTitle" placeholder="Titre de l'information / de l'activité...">
-                        <textarea id="newAnimDesc" placeholder="Description détaillée du travail de l'équipe ou de l'événement..."></textarea>
-                        <div>
-                            <button class="btn-add" onclick="addAnimCard()">Ajouter la fiche</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BOX ÉQUIPE ET CRÉDITS -->
-                <div class="credits-card">
-                    <h3>🏆 Équipe & Crédits</h3>
-                    <p id="creditsTextDisplay" style="margin-top:8px; line-height:1.5;">Espace officiel géré et administré par l'équipe de modération et d'animation de la communauté.</p>
-                    
-                    <!-- Contrôles Admin / Fondateur -->
-                    <div class="admin-only admin-controls-box" id="adminCreditsControls">
-                        <textarea id="inputCreditsText" placeholder="Modifier la description de l'équipe..."></textarea>
-                        <div class="btn-group">
-                            <button class="btn-save" onclick="saveCreditsText()">Modifier l'équipe</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BOX SERVEUR/DISCORD -->
-                <div class="pub-box">
-                    <h3 id="pubTitleDisplay">🚨 REJOIGNEZ NOS ÉVÉNEMENTS</h3>
-                    <div class="pub-content" id="pubContentDisplay" style="margin-top:8px;">Retrouvez toute l'animation directement sur notre serveur !</div>
-                    <a href="https://discord.gg/" target="_blank" class="btn-save" style="display:inline-block; text-decoration:none; margin-top:12px;">Lien du Serveur</a>
-                </div>
-
-            </div>
+        <!-- Credits -->
+        <div id="view-credits" class="view-section">
+            <h1>Crédits</h1>
         </div>
     </div>
 
     <script>
-        let userRole = null; // 'none', 'admin', 'founder'
-        let isMaintenanceOn = false;
-
-        function togglePasswordVisibility() {
-            const passInput = document.getElementById('adminPassInput');
-            passInput.type = passInput.type === 'password' ? 'text' : 'password';
-        }
+        let userRole = null;
 
         function switchView(viewId, btn) {
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => {
-                if(!b.textContent.includes('Connexion Staff') && !b.textContent.includes('Déconnexion')) {
-                    b.classList.remove('active');
-                }
-            });
-            
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('view-' + viewId).classList.add('active');
-            if(!btn.textContent.includes('Connexion Staff') && !btn.textContent.includes('Déconnexion')) {
-                btn.classList.add('active');
-            }
-
-            const titleElement = document.getElementById('pageTitle');
-            if(viewId === 'dashboard') titleElement.innerText = "Tableau de Bord";
-            if(viewId === 'credits') titleElement.innerText = "Crédits & Animation";
+            btn.classList.add('active');
         }
 
+        // Simuler connexion
         function openAdminModal() {
-            if(userRole !== null) {
-                alert("Vous êtes déjà connecté en tant que " + userRole.toUpperCase() + " !");
-                return;
-            }
-            document.getElementById('adminModal').style.display = 'flex';
-            document.getElementById('adminPassInput').value = '';
-            document.getElementById('adminLoginError').innerText = '';
-        }
-
-        function closeAdminModal() {
-            document.getElementById('adminModal').style.display = 'none';
-        }
-
-        function verifyPassword() {
-            const pass = document.getElementById('adminPassInput').value;
-
-            if(pass === "Kaljor90137") {
-                userRole = 'founder';
-                const roleDisplay = document.getElementById('userRoleDisplay');
-                roleDisplay.innerText = "Fondateur";
-                roleDisplay.style.color = "#df5353";
-
-                // Affichage des éléments Admin, Fondateur et bouton de Déconnexion
-                document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'flex', 'important'));
-                document.querySelectorAll('.founder-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
-                document.querySelectorAll('.logged-in-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
-                document.getElementById('btnLoginNav').style.display = 'none';
-
-                closeAdminModal();
-                alert("Connecté avec succès en tant que Fondateur !");
-            } 
-            else if(pass === "gazpartoutetjuleslesbg") {
-                userRole = 'admin';
-                const roleDisplay = document.getElementById('userRoleDisplay');
-                roleDisplay.innerText = "Administrateur";
-                roleDisplay.style.color = "#23a55a";
-
-                // Affichage des éléments Admin et bouton de Déconnexion
-                document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'flex', 'important'));
-                document.querySelectorAll('.logged-in-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
-                document.getElementById('btnLoginNav').style.display = 'none';
-
-                closeAdminModal();
-                alert("Connecté avec succès en tant qu'Administrateur !");
-            } 
-            else {
-                document.getElementById('adminLoginError').innerText = "Mot de passe incorrect.";
-            }
-        }
-
-        // Fonction de déconnexion globale
-        function logoutStaff() {
-            if(confirm("Voulez-vous vraiment vous déconnecter de votre session staff ?")) {
-                userRole = null;
-                const roleDisplay = document.getElementById('userRoleDisplay');
-                roleDisplay.innerText = "Membre";
-                roleDisplay.style.color = "#5865F2";
-
-                // Masquer tous les éléments admin, fondateur et de déconnexion
-                document.querySelectorAll('.admin-only, .founder-only, .logged-in-only').forEach(el => {
-                    el.style.setProperty('display', 'none', 'important');
-                });
-                
-                // Réafficher le bouton de connexion standard
-                document.getElementById('btnLoginNav').style.display = 'block';
-
-                alert("Vous avez été déconnecté avec succès.");
-            }
-        }
-
-        /* --- FONCTIONS DE GESTION --- */
-
-        function saveUpdateNote() {
-            if(userRole !== 'founder') return;
-            const newDate = document.getElementById('inputUpdateDate').value;
-            const newText = document.getElementById('inputUpdateText').value;
-            
-            if(newDate) document.getElementById('siteUpdateDate').innerText = "Dernière modification : " + newDate;
-            if(newText) document.getElementById('siteUpdateDisplay').innerText = newText;
-            alert("Mise à jour globale du site publiée avec succès !");
-        }
-
-        function clearUpdateNote() {
-            if(userRole !== 'founder') return;
-            if(confirm("Voulez-vous effacer la note de mise à jour ?")) {
-                document.getElementById('siteUpdateDisplay').innerText = "Aucune mise à jour actuellement.";
-            }
+            userRole = 'founder'; // Test auto
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+            document.querySelectorAll('.founder-only').forEach(el => el.style.display = 'block');
+            document.querySelectorAll('.logged-in-only').forEach(el => el.style.display = 'block');
+            document.getElementById('btnLoginNav').style.display = 'none';
         }
 
         function toggleMaintenance() {
-            if(userRole !== 'founder') return;
-            isMaintenanceOn = !isMaintenanceOn;
             const badge = document.getElementById('maintenanceBadge');
-            const btn = document.getElementById('btnToggleMaint');
-
-            if(isMaintenanceOn) {
-                badge.innerText = "Statut : 🛠️ Maintenance";
+            if(badge.innerText.includes('Public')) {
+                badge.innerText = "Statut : Maintenance";
                 badge.style.background = "#f23f43";
-                btn.innerText = "Désactiver la maintenance";
-                alert("Mode maintenance activé sur le site.");
             } else {
-                badge.innerText = "Statut : Public Actif";
+                badge.innerText = "Statut : Public";
                 badge.style.background = "#23a55a";
-                btn.innerText = "Activer la maintenance";
-                alert("Le site est de nouveau actif pour tous.");
             }
         }
-
-        function clearAllAnnouncements() {
-            if(userRole !== 'founder') return;
-            if(confirm("Voulez-vous supprimer toutes les annonces d'un coup ?")) {
-                document.getElementById('announcementsList').innerHTML = '';
-            }
-        }
-
-        function addAnnouncement() {
-            if(userRole === null) return;
-            const text = document.getElementById('newAnnouncementInput').value.trim();
-            if(!text) return;
-            
-            const list = document.getElementById('announcementsList');
-            const item = document.createElement('div');
-            item.className = 'announcement-item';
-            item.innerHTML = `<span>${text}</span> <button class="btn-del admin-only" style="display:flex !important;" onclick="this.parentElement.remove()">Supprimer</button>`;
-            list.appendChild(item);
-            document.getElementById('newAnnouncementInput').value = '';
-        }
-
-        function addAnimCard() {
-            if(userRole === null) return;
-            const title = document.getElementById('newAnimTitle').value.trim();
-            const desc = document.getElementById('newAnimDesc').value.trim();
-
-            if(!title || !desc) {
-                alert("Veuillez remplir le titre et la description !");
-                return;
-            }
-
-            const container = document.getElementById('animCardsContainer');
-            const card = document.createElement('div');
-            card.className = 'anim-card-item';
-            card.innerHTML = `
-                <h4>
-                    📌 ${title}
-                    <div class="btn-group admin-only" style="display:flex !important;">
-                        <button class="btn-edit" onclick="editAnimCard(this)">Modifier</button>
-                        <button class="btn-del" onclick="this.closest('.anim-card-item').remove()">Supprimer</button>
-                    </div>
-                </h4>
-                <p>${desc}</p>
-            `;
-            container.appendChild(card);
-
-            document.getElementById('newAnimTitle').value = '';
-            document.getElementById('newAnimDesc').value = '';
-        }
-
-        function editAnimCard(btn) {
-            if(userRole === null) return;
-            const card = btn.closest('.anim-card-item');
-            const currentTitle = card.querySelector('h4').childNodes[0].textContent.replace('📌', '').replace('🎭', '').trim();
-            const currentDesc = card.querySelector('p').innerText;
-
-            const newTitle = prompt("Modifier le titre :", currentTitle);
-            if(newTitle === null) return;
-
-            const newDesc = prompt("Modifier la description :", currentDesc);
-            if(newDesc === null) return;
-
-            card.querySelector('h4').childNodes[0].textContent = '📌 ' + newTitle + ' ';
-            card.querySelector('p').innerText = newDesc;
-        }
-
-        function saveCreditsText() {
-            if(userRole === null) return;
-            const text = document.getElementById('inputCreditsText').value.trim();
-            if(text) {
-                document.getElementById('creditsTextDisplay').innerText = text;
-                document.getElementById('inputCreditsText').value = '';
-                alert("Informations de l'équipe mises à jour !");
-            }
-        }
+        
+        function logoutStaff() { location.reload(); }
     </script>
 </body>
 </html>
