@@ -30,7 +30,6 @@
         #maintenanceOverlay h1 { color: #f23f43; font-size: 2.5rem; margin-bottom: 15px; }
         #maintenanceOverlay p { color: #a0a5c0; font-size: 1.1rem; max-width: 600px; line-height: 1.6; }
 
-        /* MODIFICATION : Fenêtre modale géante et élégante pour l'annonce du Fondateur */
         #founderAnnouncementModal {
             display: none;
             position: fixed;
@@ -143,7 +142,6 @@
 </head>
 <body>
 
-    <!-- Fenêtre modale grand écran pour l'annonce du Fondateur -->
     <div id="founderAnnouncementModal">
         <div class="founder-modal-content">
             <h2>👑 Annonce Officielle de la Fondation</h2>
@@ -207,6 +205,7 @@
                 <h1>Présentation de l'Équipe & Activités Animation</h1>
                 <p style="color:#a0a5c0; margin-top:8px;">Suivi des messages de présentation et des événements gérés par l'équipe.</p>
                 
+                <!-- MODIFICATION : La liste cumule désormais les éléments sans effacer les anciens -->
                 <ul id="animList" class="item-list"></ul>
                 <div class="staff-only" style="margin-top:15px;">
                     <h4 style="margin-bottom:8px; color:#5865F2;">Ajouter un message de présentation ou une activité</h4>
@@ -280,7 +279,6 @@
                     }
                     if(parsed.logs !== undefined) document.getElementById('logsContainer').innerHTML = parsed.logs;
                     
-                    // Vérifier s'il y a une annonce active du fondateur à afficher en modal géante
                     checkFounderModalDisplay();
                     applyRoleUI();
                 } catch(e) { console.error("Erreur de chargement", e); }
@@ -313,10 +311,6 @@
                     let parsed = JSON.parse(savedData);
                     if(parsed.announcements && parsed.announcements.includes("Bienvenue sur le panneau")) {
                         parsed.announcements = "";
-                        localStorage.setItem('rescue_horizon_data', JSON.stringify(parsed));
-                    }
-                    if(parsed.animList && parsed.animList.includes("Soirée Course de Voitures")) {
-                        parsed.animList = "";
                         localStorage.setItem('rescue_horizon_data', JSON.stringify(parsed));
                     }
                 } catch(e) {}
@@ -415,7 +409,6 @@
             const modal = document.getElementById('founderAnnouncementModal');
             const modalText = document.getElementById('modalAnnouncementText');
             
-            // Si une annonce est présente et que l'utilisateur n'a pas explicitement cliqué sur fermer pour cette session
             if(list && list.children.length > 0) {
                 const textContent = list.children[0].querySelector('.list-item-content').innerHTML;
                 modalText.innerHTML = textContent;
@@ -452,7 +445,6 @@
             list.appendChild(li);
             document.getElementById('announcementInput').value = '';
             
-            // Réinitialiser le stockage de session pour que la grande fenêtre s'ouvre à nouveau pour tout le monde avec la nouvelle annonce
             sessionStorage.removeItem('founder_announcement_closed');
             
             addLog(`[Annonce] Nouvelle annonce publiée.`);
@@ -482,8 +474,7 @@
             if(!title) return;
             const list = document.getElementById('animList');
 
-            list.innerHTML = "";
-
+            // MODIFICATION : Utilisation de 'prepend' (ou 'appendChild') pour ajouter le nouvel élément sans écraser les précédents
             const li = document.createElement('li');
             li.className = 'list-item';
             li.innerHTML = `
@@ -493,7 +484,8 @@
                     <button class="btn btn-del staff-only" style="display:inline-block !important;" onclick="this.closest('.list-item').remove(); addLog('[Animation/Présentation] L\\'élément a été supprimé.'); saveData();">Supprimer</button>
                 </div>
             `;
-            list.appendChild(li);
+            list.prepend(li);
+            
             document.getElementById('animTitle').value = '';
             document.getElementById('animDesc').value = '';
             addLog(`[Animation/Présentation] Nouvel élément "${title}" publié.`);
@@ -586,7 +578,6 @@
             }
         }
 
-        // MODIFICATION : Nettoyer le cache sans supprimer les mots de passe / rôles de fondateurs
         function resetSiteData() {
             if(userRole !== 'founder') return;
             if(confirm("Voulez-vous vraiment nettoyer le cache du site (annonces, activités et logs) sans toucher aux accès administrateurs et fondateurs ?")) {
