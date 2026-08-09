@@ -45,8 +45,9 @@
         .app-container { max-width: 1100px; width: 100%; margin: 20px auto; padding: 0 20px; flex: 1; }
         .card { background-color: #1a1d2e; border: 1px solid #2a2e45; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
 
-        /* VISIBILITÉ DES RÔLES */
-        .admin-only, .founder-only, .logged-in-only { display: none !important; }
+        /* VISIBILITÉ DES RÔLES CORRIGÉE */
+        .staff-only { display: none !important; }
+        .founder-only { display: none !important; }
 
         /* RESPONSIF */
         @media (max-width: 768px) {
@@ -95,7 +96,7 @@
             <button class="nav-btn" onclick="switchView('anim', this)">Équipe Animation</button>
             <button id="btnFounderSection" class="founder-only nav-btn" style="color: #f0b232;" onclick="switchView('founderPanel', this)">🔒 Section Fondation</button>
             <button id="btnLoginNav" class="nav-btn" style="color:#f0b232;" onclick="openLoginModal()">Connexion Staff</button>
-            <button id="btnLogoutNav" class="logged-in-only nav-btn" style="color:#f23f43;" onclick="logoutStaff()">Déconnexion</button>
+            <button id="btnLogoutNav" class="staff-only nav-btn" style="color:#f23f43;" onclick="logoutStaff()">Déconnexion</button>
         </div>
         <div id="statusBadge">Statut : Public Actif</div>
     </nav>
@@ -123,10 +124,10 @@
             <div class="card">
                 <h3>📢 Annonces Globales</h3>
                 <ul id="announcementList" class="item-list">
-                    <!-- Vide par défaut pour afficher les boutons uniquement lors de l'ajout -->
+                    <!-- Vide par défaut -->
                 </ul>
-                <!-- Gérable par Admin et Fondateur -->
-                <div class="admin-only founder-only" style="margin-top:15px;">
+                <!-- Gérable par TOUS les administrateurs et fondateurs connectés -->
+                <div class="staff-only" style="margin-top:15px;">
                     <input type="text" id="announcementInput" placeholder="Écrire une annonce...">
                     <button class="btn btn-main" onclick="addAnnouncement()">Publier l'annonce</button>
                 </div>
@@ -142,8 +143,8 @@
                 <ul id="animList" class="item-list">
                     <!-- Vide par défaut -->
                 </ul>
-                <!-- Gérable par Admin et Fondateur -->
-                <div class="admin-only founder-only" style="margin-top:15px;">
+                <!-- Gérable par TOUS les administrateurs et fondateurs connectés -->
+                <div class="staff-only" style="margin-top:15px;">
                     <h4 style="margin-bottom:8px; color:#5865F2;">Ajouter un message de présentation ou une activité</h4>
                     <input type="text" id="animTitle" placeholder="Titre (ex: Présentation Staff / Nom d'activité)...">
                     <textarea id="animDesc" placeholder="Contenu du message ou description..."></textarea>
@@ -290,29 +291,25 @@
         }
 
         function applyRoleUI() {
-            const adminElements = document.querySelectorAll('.admin-only');
+            const staffElements = document.querySelectorAll('.staff-only');
             const founderElements = document.querySelectorAll('.founder-only');
-            const loggedInElements = document.querySelectorAll('.logged-in-only');
 
             if(userRole === 'admin') {
                 if(isLockdownOn) {
                     alert("Alerte : Le mode Lockdown est actif par la Fondation. Vos modifications sont restreintes.");
-                    adminElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
+                    staffElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
                 } else {
-                    adminElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
+                    staffElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
                 }
                 founderElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
-                loggedInElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
                 document.getElementById('btnLoginNav').style.display = 'none';
             } else if(userRole === 'founder') {
-                adminElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
+                staffElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
                 founderElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
-                loggedInElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
                 document.getElementById('btnLoginNav').style.display = 'none';
             } else {
-                adminElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
+                staffElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
                 founderElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
-                loggedInElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
                 document.getElementById('btnLoginNav').style.display = 'block';
             }
         }
@@ -347,8 +344,8 @@
             li.innerHTML = `
                 <div class="list-item-content">${text}</div>
                 <div>
-                    <button class="btn btn-edit admin-only founder-only" onclick="editAnnouncement(this)">Modifier</button>
-                    <button class="btn btn-del admin-only founder-only" onclick="this.closest('.list-item').remove(); addLog('[Annonce] Une annonce a été supprimée.'); saveData();">Supprimer</button>
+                    <button class="btn btn-edit staff-only" style="display:inline-block !important;" onclick="editAnnouncement(this)">Modifier</button>
+                    <button class="btn btn-del staff-only" style="display:inline-block !important;" onclick="this.closest('.list-item').remove(); addLog('[Annonce] Une annonce a été supprimée.'); saveData();">Supprimer</button>
                 </div>
             `;
             list.appendChild(li);
@@ -382,8 +379,8 @@
             li.innerHTML = `
                 <div class="list-item-content"><strong>${title}</strong><br><small>${desc}</small></div>
                 <div>
-                    <button class="btn btn-edit admin-only founder-only" onclick="editAnim(this)">Modifier</button>
-                    <button class="btn btn-del admin-only founder-only" onclick="this.closest('.list-item').remove(); addLog('[Animation/Présentation] Un élément a été supprimé.'); saveData();">Supprimer</button>
+                    <button class="btn btn-edit staff-only" style="display:inline-block !important;" onclick="editAnim(this)">Modifier</button>
+                    <button class="btn btn-del staff-only" style="display:inline-block !important;" onclick="this.closest('.list-item').remove(); addLog('[Animation/Présentation] Un élément a été supprimé.'); saveData();">Supprimer</button>
                 </div>
             `;
             list.appendChild(li);
