@@ -55,16 +55,19 @@
         }
 
         /* FORMULAIRES & BOUTONS */
-        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; display: inline-block; }
+        .btn { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; display: inline-block; font-size: 0.85rem; }
         .btn-main { background: #5865F2; color: white; }
         .btn-main:hover { background: #4752c4; }
+        .btn-edit { background: #f0b232; color: white; margin-right: 5px; }
+        .btn-edit:hover { background: #d99f2b; }
         .btn-del { background: #f23f43; color: white; }
         .btn-del:hover { background: #d13438; }
         input, textarea { width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #2a2e45; background: #121420; color: white; font-family: inherit; }
 
         /* LISTES */
         .item-list { list-style: none; margin-top: 15px; }
-        .list-item { background: #121420; padding: 14px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #5865F2; }
+        .list-item { background: #121420; padding: 14px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #5865F2; gap: 10px; }
+        .list-item-content { flex: 1; word-break: break-word; }
 
         /* LOGS CONSOLE STYLE */
         .log-box { background: #0b0d14; border: 1px solid #2a2e45; border-radius: 6px; padding: 12px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; color: #3b82f6; }
@@ -120,7 +123,7 @@
             <div class="card">
                 <h3>📢 Annonces Globales</h3>
                 <ul id="announcementList" class="item-list">
-                    <li class="list-item">Bienvenue sur le panneau officiel de Rescue Horizon Roleplay !</li>
+                    <!-- Vide par défaut pour supprimer l'exemple de base -->
                 </ul>
                 <!-- Gérable par Admin et Fondateur -->
                 <div class="admin-only founder-only" style="margin-top:15px;">
@@ -137,13 +140,11 @@
                 <p style="color:#a0a5c0; margin-top:8px;">Suivi des rôles et des événements gérés par l'équipe d'animation.</p>
                 
                 <ul id="animList" class="item-list">
-                    <li class="list-item">
-                        <div><strong>Soirée Course de Voitures</strong><br><small>Animateur : Jules - Organisation de courses urbaines sécurisées.</small></div>
-                    </li>
+                    <!-- Vide par défaut pour supprimer l'exemple de base -->
                 </ul>
                 <!-- Gérable par Admin et Fondateur -->
                 <div class="admin-only founder-only" style="margin-top:15px;">
-                    <h4 style="margin-bottom:8px; color:#5865F2;">Ajouter / Modifier une activité</h4>
+                    <h4 style="margin-bottom:8px; color:#5865F2;">Ajouter une activité / message</h4>
                     <input type="text" id="animTitle" placeholder="Titre de l'activité / Rôle...">
                     <textarea id="animDesc" placeholder="Description de l'activité ou de l'animateur..."></textarea>
                     <button class="btn btn-main" onclick="addAnim()">Ajouter l'élément</button>
@@ -182,21 +183,26 @@
     </div>
 
     <script>
-        // --- CHARGEMENT DES DONNÉES EN DIRECT AVEC LOCALSTORAGE & SYNC ENTRE ONGLETS ---
+        let userRole = null; // 'admin', 'founder' ou null
+        let isMaintenanceOn = false;
+
+        // --- CHARGEMENT DES DONNÉES EN DIRECT AVEC LOCALSTORAGE & SYNC AUTOMATIQUE ---
         function loadData() {
             const savedData = localStorage.getItem('rescue_horizon_data');
             if (savedData) {
                 try {
                     const parsed = JSON.parse(savedData);
-                    if(parsed.announcements) document.getElementById('announcementList').innerHTML = parsed.announcements;
-                    if(parsed.animList) document.getElementById('animList').innerHTML = parsed.animList;
-                    if(parsed.siteUpdate) document.getElementById('siteUpdateDisplay').innerHTML = parsed.siteUpdate;
+                    if(parsed.announcements !== undefined) document.getElementById('announcementList').innerHTML = parsed.announcements;
+                    if(parsed.animList !== undefined) document.getElementById('animList').innerHTML = parsed.animList;
+                    if(parsed.siteUpdate !== undefined) document.getElementById('siteUpdateDisplay').innerHTML = parsed.siteUpdate;
                     if(parsed.isMaintenance !== undefined) {
                         isMaintenanceOn = parsed.isMaintenance;
                         applyMaintenanceState();
                     }
-                    if(parsed.logs) document.getElementById('logsContainer').innerHTML = parsed.logs;
-                } catch(e) { console.error("Erreur de chargement des données", e); }
+                    if(parsed.logs !== undefined) document.getElementById('logsContainer').innerHTML = parsed.logs;
+                    
+                    applyRoleUI();
+                } catch(e) { console.error("Erreur de chargement", e); }
             }
         }
 
@@ -209,19 +215,14 @@
                 logs: document.getElementById('logsContainer').innerHTML
             };
             localStorage.setItem('rescue_horizon_data', JSON.stringify(dataToSave));
-            // Déclenche un événement pour rafraîchir automatiquement les autres onglets ouverts
             localStorage.setItem('rescue_horizon_sync', Date.now());
         }
 
-        // Écoute les modifications faites dans d'autres onglets pour synchroniser instantanément
         window.addEventListener('storage', function(e) {
             if (e.key === 'rescue_horizon_data' || e.key === 'rescue_horizon_sync') {
                 loadData();
             }
         });
-
-        let userRole = null; // 'admin', 'founder' ou null
-        let isMaintenanceOn = false;
 
         window.onload = function() {
             loadData();
@@ -260,7 +261,7 @@
             if(roleFound) {
                 userRole = roleFound;
                 applyRoleUI();
-                addLog(`[Connexion] Un utilisateur s'est connecté en tant que ${roleName}.`);
+                addLog(`[Connexion] Connexion réussie au rôle : ${roleName}.`);
                 
                 if(fromMaintenance) {
                     document.getElementById('maintenanceOverlay').style.display = 'none';
@@ -272,25 +273,37 @@
         }
 
         function applyRoleUI() {
-            // Afficher éléments Admin et Fondateur
-            if(userRole === 'admin' || userRole === 'founder') {
-                document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
-                document.querySelectorAll('.logged-in-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+            const adminElements = document.querySelectorAll('.admin-only');
+            const founderElements = document.querySelectorAll('.founder-only');
+            const loggedInElements = document.querySelectorAll('.logged-in-only');
+
+            if(userRole === 'admin') {
+                adminElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
+                founderElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
+                loggedInElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
                 document.getElementById('btnLoginNav').style.display = 'none';
-            }
-            // Afficher éléments exclusifs Fondateur
-            if(userRole === 'founder') {
-                document.querySelectorAll('.founder-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+            } else if(userRole === 'founder') {
+                adminElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
+                founderElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
+                loggedInElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
+                document.getElementById('btnLoginNav').style.display = 'none';
+            } else {
+                adminElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
+                founderElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
+                loggedInElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
+                document.getElementById('btnLoginNav').style.display = 'block';
             }
         }
 
         function logoutStaff() {
             addLog(`[Déconnexion] Un membre du staff s'est déconnecté.`);
             userRole = null;
-            location.reload();
+            applyRoleUI();
+            switchView('dashboard', document.querySelector('.nav-btn'));
+            alert("Vous avez été déconnecté avec succès.");
         }
 
-        // --- GESTION DES LOGS ET NOTIFICATIONS ---
+        // --- SYSTÈME DE LOGS ---
         function addLog(text) {
             const container = document.getElementById('logsContainer');
             const time = new Date().toLocaleTimeString();
@@ -301,7 +314,7 @@
             saveData();
         }
 
-        // --- FONCTIONNALITÉS ADMINISTRATEUR (Annonces et Animation uniquement) ---
+        // --- GESTION DES ANNONCES (Modifiable, Supprimable avec les boutons admin/fonda) ---
         function addAnnouncement() {
             if(userRole !== 'admin' && userRole !== 'founder') return;
             const text = document.getElementById('announcementInput').value.trim();
@@ -309,13 +322,33 @@
             const list = document.getElementById('announcementList');
             const li = document.createElement('li');
             li.className = 'list-item';
-            li.innerHTML = text + `<button class="btn btn-del" onclick="this.parentElement.remove(); saveData();">X</button>`;
+            li.innerHTML = `
+                <div class="list-item-content">${text}</div>
+                <div>
+                    <button class="btn btn-edit admin-only founder-only" onclick="editAnnouncement(this)">Modifier</button>
+                    <button class="btn btn-del admin-only founder-only" onclick="this.closest('.list-item').remove(); addLog('[Annonce] Une annonce a été supprimée.'); saveData();">Supprimer</button>
+                </div>
+            `;
             list.appendChild(li);
             document.getElementById('announcementInput').value = '';
-            addLog(`[Annonce] Nouvelle annonce publiée.`);
+            addLog(`[Annonce] Nouvelle annonce ajoutée.`);
             saveData();
+            applyRoleUI();
         }
 
+        function editAnnouncement(btn) {
+            if(userRole !== 'admin' && userRole !== 'founder') return;
+            const itemContent = btn.closest('.list-item').querySelector('.list-item-content');
+            const currentText = itemContent.innerText;
+            const newText = prompt("Modifier l'annonce :", currentText);
+            if(newText !== null && newText.trim() !== "") {
+                itemContent.innerText = newText.trim();
+                addLog(`[Annonce] Une annonce a été modifiée.`);
+                saveData();
+            }
+        }
+
+        // --- GESTION DE L'ÉQUIPE D'ANIMATION (Modifiable, Supprimable avec les boutons admin/fonda) ---
         function addAnim() {
             if(userRole !== 'admin' && userRole !== 'founder') return;
             const title = document.getElementById('animTitle').value.trim();
@@ -324,15 +357,41 @@
             const list = document.getElementById('animList');
             const li = document.createElement('li');
             li.className = 'list-item';
-            li.innerHTML = `<div><strong>${title}</strong><br><small>${desc}</small></div><button class="btn btn-del" onclick="this.parentElement.remove(); saveData();">X</button>`;
+            li.innerHTML = `
+                <div class="list-item-content"><strong>${title}</strong><br><small>${desc}</small></div>
+                <div>
+                    <button class="btn btn-edit admin-only founder-only" onclick="editAnim(this)">Modifier</button>
+                    <button class="btn btn-del admin-only founder-only" onclick="this.closest('.list-item').remove(); addLog('[Animation] Une activité a été supprimée.'); saveData();">Supprimer</button>
+                </div>
+            `;
             list.appendChild(li);
             document.getElementById('animTitle').value = '';
             document.getElementById('animDesc').value = '';
-            addLog(`[Animation] Activité "${title}" ajoutée/modifiée.`);
+            addLog(`[Animation] Activité "${title}" ajoutée.`);
+            saveData();
+            applyRoleUI();
+        }
+
+        function editAnim(btn) {
+            if(userRole !== 'admin' && userRole !== 'founder') return;
+            const itemContent = btn.closest('.list-item').querySelector('.list-item-content');
+            
+            const strongTag = itemContent.querySelector('strong');
+            const smallTag = itemContent.querySelector('small');
+            const currentTitle = strongTag ? strongTag.innerText : "";
+            const currentDesc = smallTag ? smallTag.innerText : "";
+
+            const newTitle = prompt("Modifier le titre de l'activité / rôle :", currentTitle);
+            if(newTitle === null) return;
+            const newDesc = prompt("Modifier la description :", currentDesc);
+            if(newDesc === null) return;
+
+            itemContent.innerHTML = `<strong>${newTitle.trim()}</strong><br><small>${newDesc.trim()}</small>`;
+            addLog(`[Animation] Une activité / présentation a été modifiée.`);
             saveData();
         }
 
-        // --- FONCTIONNALITÉS EXCLUSIVES FONDATEUR (Mises à jour & Maintenance) ---
+        // --- FONCTIONNALITÉS EXCLUSIVES FONDATION (Mises à jour & Maintenance) ---
         function saveSiteUpdate() {
             if(userRole !== 'founder') return;
             const text = document.getElementById('inputUpdateText').value.trim();
@@ -348,7 +407,7 @@
             if(userRole !== 'founder') return;
             isMaintenanceOn = !isMaintenanceOn;
             applyMaintenanceState();
-            addLog(`[Fondation] Statut de maintenance modifié (Actif: ${isMaintenanceOn}).`);
+            addLog(`[Fondation] Mode maintenance modifié (État : ${isMaintenanceOn}).`);
             saveData();
         }
 
@@ -361,7 +420,6 @@
                 badge.innerText = "Statut : 🛠️ Maintenance";
                 badge.style.background = "#f23f43";
                 if(btn) btn.innerText = "Désactiver la maintenance";
-                // Si l'utilisateur n'est pas fondateur, on bloque totalement l'accès avec l'écran de maintenance
                 if(userRole !== 'founder') {
                     overlay.style.display = 'flex';
                 }
@@ -375,7 +433,7 @@
 
         function resetSiteData() {
             if(userRole !== 'founder') return;
-            if(confirm("Voulez-vous vraiment réinitialiser toutes les données ?")) {
+            if(confirm("Voulez-vous vraiment réinitialiser toutes les données du site ?")) {
                 localStorage.removeItem('rescue_horizon_data');
                 addLog(`[Fondation] Réinitialisation complète des données du site.`);
                 location.reload();
