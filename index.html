@@ -1,25 +1,33 @@
-# Creating the updated HTML file with the requested enhancements:
-# 1. Automatic "Member" default state.
-# 2. More content sections for "Rescue Horizon Roleplay".
-# 3. Enhanced Admin/Founder management for announcements and animation tasks.
-# 4. Responsive design.
-
-html_content = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rescue Horizon - Panneau Staff</title>
-
+    <title>Rescue Horizon RP - Panneau Staff</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0f111a; color: #ffffff; min-height: 100vh; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #0f111a; color: #ffffff; min-height: 100vh; display: flex; flex-direction: column; }
 
-        /* NAVBAR SUPÉRIEURE */
+        /* ÉCRAN DE MAINTENANCE / BLOCAGE TOTAL */
+        #maintenanceOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f111a;
+            z-index: 99999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        #maintenanceOverlay h1 { color: #f23f43; font-size: 2.5rem; margin-bottom: 15px; }
+        #maintenanceOverlay p { color: #a0a5c0; font-size: 1.1rem; max-width: 600px; line-height: 1.6; }
+
+        /* NAVBAR */
         .top-nav {
             background-color: #121420;
-            padding: 15px 20px;
+            padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -27,164 +35,352 @@ html_content = """
             flex-wrap: wrap;
             gap: 15px;
         }
-        .nav-menu { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        .nav-btn { background: none; border: none; color: #a0a5c0; cursor: pointer; padding: 8px 12px; border-radius: 6px; font-weight: bold; transition: 0.3s; }
+        .nav-menu { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; }
+        .nav-btn { background: none; border: none; color: #a0a5c0; cursor: pointer; padding: 8px 14px; border-radius: 6px; font-weight: bold; transition: 0.2s; }
         .nav-btn:hover, .nav-btn.active { background: #1a1d2e; color: #fff; }
         
-        #maintenanceBadge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; background: #23a55a; }
+        #statusBadge { padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; background: #23a55a; color: #fff; }
 
         /* CONTENEUR */
-        .app-container { max-width: 1100px; margin: 20px auto; padding: 0 20px; }
-        .card { background-color: #1a1d2e; border: 1px solid #2a2e45; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .app-container { max-width: 1100px; width: 100%; margin: 20px auto; padding: 0 20px; flex: 1; }
+        .card { background-color: #1a1d2e; border: 1px solid #2a2e45; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
 
-        /* VISIBILITÉ RÔLES */
+        /* VISIBILITÉ DES RÔLES */
         .admin-only, .founder-only, .logged-in-only { display: none !important; }
 
-        /* RESPONSIVITÉ */
+        /* RESPONSIF */
         @media (max-width: 768px) {
-            .top-nav { flex-direction: column; }
+            .top-nav { flex-direction: column; text-align: center; }
             h1 { font-size: 1.4rem; }
         }
 
-        /* BOUTONS ET INPUTS */
-        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; }
+        /* FORMULAIRES & BOUTONS */
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; display: inline-block; }
         .btn-main { background: #5865F2; color: white; }
+        .btn-main:hover { background: #4752c4; }
         .btn-del { background: #f23f43; color: white; }
-        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #2a2e45; background: #121420; color: white; }
+        .btn-del:hover { background: #d13438; }
+        input, textarea { width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #2a2e45; background: #121420; color: white; font-family: inherit; }
 
         /* LISTES */
         .item-list { list-style: none; margin-top: 15px; }
-        .list-item { background: #121420; padding: 12px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #5865F2; }
+        .list-item { background: #121420; padding: 14px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #5865F2; }
+
+        /* LOGS CONSOLE STYLE */
+        .log-box { background: #0b0d14; border: 1px solid #2a2e45; border-radius: 6px; padding: 12px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; color: #3b82f6; }
+        .log-item { margin-bottom: 5px; border-bottom: 1px solid #1a1d2e; padding-bottom: 3px; }
     </style>
 </head>
 <body>
+
+    <!-- ÉCRAN DE MAINTENANCE / BLOCAGE TOTAL -->
+    <div id="maintenanceOverlay">
+        <h1>🛠️ Site en Maintenance</h1>
+        <p>Le site Rescue Horizon RP est actuellement fermé au public par la Fondation pour cause de maintenance ou de mise à jour. Veuillez patienter.</p>
+        <div id="maintLoginArea" style="margin-top: 30px;">
+            <p style="font-size:0.9rem; color:#fff; margin-bottom:10px;">Accès Staff / Fondateur requis :</p>
+            <input type="password" id="maintPassInput" placeholder="Mot de passe..." style="max-width: 300px; display:inline-block;">
+            <button class="btn btn-main" onclick="tryLoginFromMaint()">Se connecter</button>
+        </div>
+    </div>
 
     <!-- NAVBAR -->
     <nav class="top-nav">
         <div style="font-weight: bold; color: #5865F2; font-size: 1.2rem;">Rescue Horizon RP</div>
         <div class="nav-menu">
             <button class="nav-btn active" onclick="switchView('dashboard', this)">Tableau de Bord</button>
-            <button class="nav-btn" onclick="switchView('anim', this)">Gestion Animation</button>
-            <button id="btnLoginNav" class="nav-btn" style="color:#f0b232;" onclick="openAdminModal()">Connexion Staff</button>
+            <button class="nav-btn" onclick="switchView('anim', this)">Équipe Animation</button>
+            <button id="btnFounderSection" class="founder-only nav-btn" style="color: #f0b232;" onclick="switchView('founderPanel', this)">🔒 Section Fondation</button>
+            <button id="btnLoginNav" class="nav-btn" style="color:#f0b232;" onclick="openLoginModal()">Connexion Staff</button>
             <button id="btnLogoutNav" class="logged-in-only nav-btn" style="color:#f23f43;" onclick="logoutStaff()">Déconnexion</button>
         </div>
-        <div id="maintenanceBadge">Statut : Public Actif</div>
+        <div id="statusBadge">Statut : Public Actif</div>
     </nav>
 
     <div class="app-container">
-        <!-- DASHBOARD VIEW -->
+        
+        <!-- SECTION 1 : TABLEAU DE BORD (Annonces & Mises à jour) -->
         <div id="view-dashboard" class="view-section">
             <div class="card">
-                <h1>Bienvenue sur le Panneau Staff</h1>
-                <p style="color:#a0a5c0; margin-top:10px;">Gestion centralisée de Rescue Horizon Roleplay.</p>
+                <h1>Bienvenue sur Rescue Horizon RP</h1>
+                <p style="color:#a0a5c0; margin-top:8px;">Plateforme officielle de gestion de la communauté.</p>
                 
-                <div class="founder-only" style="margin-top:20px; padding:15px; background:#121420; border-radius:8px;">
-                    <h3>👑 Commandes Fondateur</h3>
-                    <button class="btn btn-main" id="btnToggleMaint" onclick="toggleMaintenance()">Activer la maintenance</button>
+                <!-- Bloc Mises à jour (Réservé Fondateur) -->
+                <div style="margin-top:20px; background:#121420; padding:15px; border-radius:8px; border:1px solid #2a2e45;">
+                    <h3 style="color:#f0b232; margin-bottom:8px;">🚀 Mises à Jour du Site</h3>
+                    <div id="siteUpdateDisplay" style="color:#d1d5db; font-size:0.95rem; line-height:1.4;">Aucune mise à jour récente.</div>
+                    
+                    <div class="founder-only" style="margin-top:12px; border-top:1px dashed #2a2e45; padding-top:10px;">
+                        <textarea id="inputUpdateText" placeholder="Rédiger la nouvelle mise à jour..."></textarea>
+                        <button class="btn btn-main" onclick="saveSiteUpdate()">Publier la mise à jour</button>
+                    </div>
                 </div>
             </div>
 
             <div class="card">
                 <h3>📢 Annonces Globales</h3>
                 <ul id="announcementList" class="item-list">
-                    <li class="list-item">Bienvenue sur le nouveau panneau staff de Rescue Horizon !</li>
+                    <li class="list-item">Bienvenue sur le panneau officiel de Rescue Horizon Roleplay !</li>
                 </ul>
-                <div class="admin-only">
-                    <input type="text" id="announcementInput" placeholder="Nouvelle annonce...">
-                    <button class="btn btn-main" onclick="addAnnouncement()">Publier</button>
+                <!-- Gérable par Admin et Fondateur -->
+                <div class="admin-only founder-only" style="margin-top:15px;">
+                    <input type="text" id="announcementInput" placeholder="Écrire une annonce...">
+                    <button class="btn btn-main" onclick="addAnnouncement()">Publier l'annonce</button>
                 </div>
             </div>
         </div>
 
-        <!-- ANIMATION VIEW -->
+        <!-- SECTION 2 : ÉQUIPE ANIMATION -->
         <div id="view-anim" class="view-section" style="display:none;">
             <div class="card">
-                <h1>Activités Animation</h1>
-                <p>Suivi et gestion des événements organisés pour la communauté.</p>
+                <h1>Activités & Présentation Animation</h1>
+                <p style="color:#a0a5c0; margin-top:8px;">Suivi des rôles et des événements gérés par l'équipe d'animation.</p>
+                
                 <ul id="animList" class="item-list">
                     <li class="list-item">
-                        <div><strong>Soirée Course de voitures</strong><br><small>Responsable: Jules</small></div>
+                        <div><strong>Soirée Course de Voitures</strong><br><small>Animateur : Jules - Organisation de courses urbaines sécurisées.</small></div>
                     </li>
                 </ul>
-                <div class="admin-only">
-                    <input type="text" id="animTitle" placeholder="Nom de l'activité...">
-                    <input type="text" id="animBy" placeholder="Responsable...">
-                    <button class="btn btn-main" onclick="addAnim()">Ajouter Activité</button>
+                <!-- Gérable par Admin et Fondateur -->
+                <div class="admin-only founder-only" style="margin-top:15px;">
+                    <h4 style="margin-bottom:8px; color:#5865F2;">Ajouter / Modifier une activité</h4>
+                    <input type="text" id="animTitle" placeholder="Titre de l'activité / Rôle...">
+                    <textarea id="animDesc" placeholder="Description de l'activité ou de l'animateur..."></textarea>
+                    <button class="btn btn-main" onclick="addAnim()">Ajouter l'élément</button>
                 </div>
             </div>
         </div>
+
+        <!-- SECTION 3 : SECTION EXCLUSIVE FONDATION -->
+        <div id="view-founderPanel" class="view-section" style="display:none;">
+            <div class="card founder-only">
+                <h2 style="color: #f0b232; margin-bottom: 10px;">👑 Console Exclusive de la Fondation</h2>
+                <p style="color: #a0a5c0; margin-bottom: 20px;">Panneau de contrôle suprême réservé strictement aux fondateurs de Rescue Horizon RP.</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div style="background:#121420; padding:15px; border-radius:8px; border:1px solid #2a2e45;">
+                        <h4 style="margin-bottom:8px;">🛠️ Gestion Maintenance & Blocage</h4>
+                        <p style="font-size:0.85rem; color:#a0a5c0; margin-bottom:10px;">Bloque l'accès du site aux membres extérieurs.</p>
+                        <button class="btn btn-main" id="btnToggleMaint" onclick="toggleMaintenance()">Activer la maintenance</button>
+                    </div>
+
+                    <div style="background:#121420; padding:15px; border-radius:8px; border:1px solid #2a2e45;">
+                        <h4 style="margin-bottom:8px;">🧹 Réinitialisation Totale</h4>
+                        <p style="font-size:0.85rem; color:#a0a5c0; margin-bottom:10px;">Efface toutes les données personnalisées du site.</p>
+                        <button class="btn btn-del" onclick="resetSiteData()">Nettoyer le cache</button>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 10px; color: #fff;">📋 Logs de Connexion & Activité en Direct</h3>
+                <p style="font-size: 0.85rem; color: #a0a5c0; margin-bottom: 10px;">Historique sécurisé de toutes les connexions staff et modifications effectuées :</p>
+                <div id="logsContainer" class="log-box">
+                    <div class="log-item">[Système] Initialisation des logs de sécurité de Rescue Horizon.</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        let userRole = null;
+        // --- CHARGEMENT DES DONNÉES EN DIRECT AVEC LOCALSTORAGE & SYNC ENTRE ONGLETS ---
+        function loadData() {
+            const savedData = localStorage.getItem('rescue_horizon_data');
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    if(parsed.announcements) document.getElementById('announcementList').innerHTML = parsed.announcements;
+                    if(parsed.animList) document.getElementById('animList').innerHTML = parsed.animList;
+                    if(parsed.siteUpdate) document.getElementById('siteUpdateDisplay').innerHTML = parsed.siteUpdate;
+                    if(parsed.isMaintenance !== undefined) {
+                        isMaintenanceOn = parsed.isMaintenance;
+                        applyMaintenanceState();
+                    }
+                    if(parsed.logs) document.getElementById('logsContainer').innerHTML = parsed.logs;
+                } catch(e) { console.error("Erreur de chargement des données", e); }
+            }
+        }
+
+        function saveData() {
+            const dataToSave = {
+                announcements: document.getElementById('announcementList').innerHTML,
+                animList: document.getElementById('animList').innerHTML,
+                siteUpdate: document.getElementById('siteUpdateDisplay').innerHTML,
+                isMaintenance: isMaintenanceOn,
+                logs: document.getElementById('logsContainer').innerHTML
+            };
+            localStorage.setItem('rescue_horizon_data', JSON.stringify(dataToSave));
+            // Déclenche un événement pour rafraîchir automatiquement les autres onglets ouverts
+            localStorage.setItem('rescue_horizon_sync', Date.now());
+        }
+
+        // Écoute les modifications faites dans d'autres onglets pour synchroniser instantanément
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'rescue_horizon_data' || e.key === 'rescue_horizon_sync') {
+                loadData();
+            }
+        });
+
+        let userRole = null; // 'admin', 'founder' ou null
+        let isMaintenanceOn = false;
+
+        window.onload = function() {
+            loadData();
+        };
 
         function switchView(viewId, btn) {
             document.querySelectorAll('.view-section').forEach(s => s.style.display = 'none');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('view-' + viewId).style.display = 'block';
-            btn.classList.add('active');
+            if(btn) btn.classList.add('active');
         }
 
-        function openAdminModal() {
-            const pass = prompt("Entrez le mot de passe staff :");
-            if(pass === "Kaljor90137") {
-                userRole = 'founder';
-                showAdminControls();
-            } else if(pass === "gazpartout") {
-                userRole = 'admin';
-                showAdminControls();
+        function openLoginModal() {
+            const pass = prompt("Entrez votre mot de passe d'accès Staff :");
+            if(pass === null) return;
+            authenticate(pass);
+        }
+
+        function tryLoginFromMaint() {
+            const pass = document.getElementById('maintPassInput').value;
+            authenticate(pass, true);
+        }
+
+        function authenticate(pass, fromMaintenance = false) {
+            let roleFound = null;
+            let roleName = "";
+
+            if(pass === "Kaljor09137@") {
+                roleFound = 'founder';
+                roleName = 'Fondateur';
+            } else if(pass === "gazpartoutetjuleslesbg") {
+                roleFound = 'admin';
+                roleName = 'Administrateur';
+            }
+
+            if(roleFound) {
+                userRole = roleFound;
+                applyRoleUI();
+                addLog(`[Connexion] Un utilisateur s'est connecté en tant que ${roleName}.`);
+                
+                if(fromMaintenance) {
+                    document.getElementById('maintenanceOverlay').style.display = 'none';
+                }
+                alert(`Connecté avec succès en tant que ${roleName} !`);
             } else {
                 alert("Mot de passe incorrect.");
             }
         }
 
-        function showAdminControls() {
-            document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+        function applyRoleUI() {
+            // Afficher éléments Admin et Fondateur
+            if(userRole === 'admin' || userRole === 'founder') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+                document.querySelectorAll('.logged-in-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+                document.getElementById('btnLoginNav').style.display = 'none';
+            }
+            // Afficher éléments exclusifs Fondateur
             if(userRole === 'founder') {
                 document.querySelectorAll('.founder-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
             }
-            document.querySelectorAll('.logged-in-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
-            document.getElementById('btnLoginNav').style.display = 'none';
         }
 
-        function logoutStaff() { location.reload(); }
-
-        function toggleMaintenance() {
-            const badge = document.getElementById('maintenanceBadge');
-            const btn = document.getElementById('btnToggleMaint');
-            if(badge.innerText.includes('Public')) {
-                badge.innerText = "Statut : 🛠️ Maintenance";
-                badge.style.background = "#f23f43";
-                btn.innerText = "Désactiver la maintenance";
-            } else {
-                badge.innerText = "Statut : Public Actif";
-                badge.style.background = "#23a55a";
-                btn.innerText = "Activer la maintenance";
-            }
+        function logoutStaff() {
+            addLog(`[Déconnexion] Un membre du staff s'est déconnecté.`);
+            userRole = null;
+            location.reload();
         }
 
+        // --- GESTION DES LOGS ET NOTIFICATIONS ---
+        function addLog(text) {
+            const container = document.getElementById('logsContainer');
+            const time = new Date().toLocaleTimeString();
+            const logItem = document.createElement('div');
+            logItem.className = 'log-item';
+            logItem.innerText = `[${time}] ${text}`;
+            container.prepend(logItem);
+            saveData();
+        }
+
+        // --- FONCTIONNALITÉS ADMINISTRATEUR (Annonces et Animation uniquement) ---
         function addAnnouncement() {
-            const text = document.getElementById('announcementInput').value;
+            if(userRole !== 'admin' && userRole !== 'founder') return;
+            const text = document.getElementById('announcementInput').value.trim();
             if(!text) return;
+            const list = document.getElementById('announcementList');
             const li = document.createElement('li');
             li.className = 'list-item';
-            li.innerHTML = text + '<button class="btn btn-del" onclick="this.parentElement.remove()">X</button>';
-            document.getElementById('announcementList').appendChild(li);
+            li.innerHTML = text + `<button class="btn btn-del" onclick="this.parentElement.remove(); saveData();">X</button>`;
+            list.appendChild(li);
             document.getElementById('announcementInput').value = '';
+            addLog(`[Annonce] Nouvelle annonce publiée.`);
+            saveData();
         }
 
         function addAnim() {
-            const title = document.getElementById('animTitle').value;
-            const by = document.getElementById('animBy').value;
+            if(userRole !== 'admin' && userRole !== 'founder') return;
+            const title = document.getElementById('animTitle').value.trim();
+            const desc = document.getElementById('animDesc').value.trim();
             if(!title) return;
+            const list = document.getElementById('animList');
             const li = document.createElement('li');
             li.className = 'list-item';
-            li.innerHTML = `<div><strong>${title}</strong><br><small>Responsable: ${by}</small></div><button class="btn btn-del" onclick="this.parentElement.remove()">X</button>`;
-            document.getElementById('animList').appendChild(li);
+            li.innerHTML = `<div><strong>${title}</strong><br><small>${desc}</small></div><button class="btn btn-del" onclick="this.parentElement.remove(); saveData();">X</button>`;
+            list.appendChild(li);
+            document.getElementById('animTitle').value = '';
+            document.getElementById('animDesc').value = '';
+            addLog(`[Animation] Activité "${title}" ajoutée/modifiée.`);
+            saveData();
+        }
+
+        // --- FONCTIONNALITÉS EXCLUSIVES FONDATEUR (Mises à jour & Maintenance) ---
+        function saveSiteUpdate() {
+            if(userRole !== 'founder') return;
+            const text = document.getElementById('inputUpdateText').value.trim();
+            if(!text) return;
+            document.getElementById('siteUpdateDisplay').innerText = text;
+            document.getElementById('inputUpdateText').value = '';
+            addLog(`[Fondation] Mise à jour du site publiée.`);
+            saveData();
+            alert("Mise à jour publiée avec succès !");
+        }
+
+        function toggleMaintenance() {
+            if(userRole !== 'founder') return;
+            isMaintenanceOn = !isMaintenanceOn;
+            applyMaintenanceState();
+            addLog(`[Fondation] Statut de maintenance modifié (Actif: ${isMaintenanceOn}).`);
+            saveData();
+        }
+
+        function applyMaintenanceState() {
+            const badge = document.getElementById('statusBadge');
+            const btn = document.getElementById('btnToggleMaint');
+            const overlay = document.getElementById('maintenanceOverlay');
+
+            if(isMaintenanceOn) {
+                badge.innerText = "Statut : 🛠️ Maintenance";
+                badge.style.background = "#f23f43";
+                if(btn) btn.innerText = "Désactiver la maintenance";
+                // Si l'utilisateur n'est pas fondateur, on bloque totalement l'accès avec l'écran de maintenance
+                if(userRole !== 'founder') {
+                    overlay.style.display = 'flex';
+                }
+            } else {
+                badge.innerText = "Statut : Public Actif";
+                badge.style.background = "#23a55a";
+                if(btn) btn.innerText = "Activer la maintenance";
+                overlay.style.display = 'none';
+            }
+        }
+
+        function resetSiteData() {
+            if(userRole !== 'founder') return;
+            if(confirm("Voulez-vous vraiment réinitialiser toutes les données ?")) {
+                localStorage.removeItem('rescue_horizon_data');
+                addLog(`[Fondation] Réinitialisation complète des données du site.`);
+                location.reload();
+            }
         }
     </script>
 </body>
 </html>
-"""
-with open("rescue_horizon_staff.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
