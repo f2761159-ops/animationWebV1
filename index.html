@@ -135,6 +135,10 @@
         .item-list { list-style: none; margin-top: 15px; }
         .list-item { background: rgba(5, 11, 20, 0.9); padding: 14px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #5865F2; gap: 10px; }
         .list-item-content { flex: 1; word-break: break-word; }
+        
+        /* Style pour les images intégrées dans les annonces / animations */
+        .item-image-container { margin-top: 10px; max-width: 100%; }
+        .item-image-container img { max-width: 100%; max-height: 250px; border-radius: 6px; border: 1px solid #1e3a5f; display: block; object-fit: cover; }
 
         .log-box { background: #02050a; border: 1px solid #1e3a5f; border-radius: 6px; padding: 12px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; color: #3b82f6; }
         .log-item { margin-bottom: 5px; border-bottom: 1px solid #0d1b2a; padding-bottom: 3px; }
@@ -161,7 +165,6 @@
     </div>
 
     <nav class="top-nav">
-        <!-- MODIFICATION : Changement du texte en haut à gauche -->
         <div style="font-weight: bold; color: #5865F2; font-size: 1.2rem;">Animation de Rescue Horizon Rôleplay</div>
         <div class="nav-menu">
             <button class="nav-btn active" onclick="switchView('dashboard', this)">Tableau de Bord</button>
@@ -177,7 +180,6 @@
         
         <div id="view-dashboard" class="view-section">
             <div class="card">
-                <!-- MODIFICATION : Changement du texte de bienvenue -->
                 <h1>Animation de Rescue Horizon Rôleplay</h1>
                 <p style="color:#a0a5c0; margin-top:8px;">Plateforme officielle de gestion de la communauté.</p>
                 
@@ -197,6 +199,7 @@
                 <ul id="announcementList" class="item-list"></ul>
                 <div class="staff-only" style="margin-top:15px;">
                     <input type="text" id="announcementInput" placeholder="Écrire une annonce...">
+                    <input type="text" id="announcementImgInput" placeholder="URL de l'image (optionnel)...">
                     <button class="btn btn-main" onclick="addAnnouncement()">Publier l'annonce</button>
                 </div>
             </div>
@@ -212,6 +215,7 @@
                     <h4 style="margin-bottom:8px; color:#5865F2;">Ajouter un message de présentation ou une activité</h4>
                     <input type="text" id="animTitle" placeholder="Titre (ex: Présentation Staff / Nom d'activité)...">
                     <textarea id="animDesc" placeholder="Contenu du message ou description..."></textarea>
+                    <input type="text" id="animImgInput" placeholder="URL de l'image (optionnel)...">
                     <button class="btn btn-main" onclick="addAnim()">Ajouter l'élément</button>
                 </div>
             </div>
@@ -429,15 +433,21 @@
         function addAnnouncement() {
             if((userRole !== 'admin' && userRole !== 'founder') || (userRole === 'admin' && isLockdownOn)) return;
             const text = document.getElementById('announcementInput').value.trim();
+            const imgSrc = document.getElementById('announcementImgInput').value.trim();
             if(!text) return;
             const list = document.getElementById('announcementList');
             
             list.innerHTML = "";
 
+            let imgHTML = imgSrc ? `<div class="item-image-container"><img src="${imgSrc}" alt="Image annonce"></div>` : `<div class="item-image-container" style="display:none;"></div>`;
+
             const li = document.createElement('li');
             li.className = 'list-item';
             li.innerHTML = `
-                <div class="list-item-content">${text}</div>
+                <div class="list-item-content">
+                    <span class="text-part">${text}</span>
+                    ${imgHTML}
+                </div>
                 <div>
                     <button class="btn btn-edit staff-only" style="display:inline-block !important;" onclick="editAnnouncement(this)">Modifier</button>
                     <button class="btn btn-del staff-only" style="display:inline-block !important;" onclick="this.closest('.list-item').remove(); sessionStorage.removeItem('founder_announcement_closed'); addLog('[Annonce] L\\'annonce a été supprimée.'); saveData(); checkFounderModalDisplay();">Supprimer</button>
@@ -445,6 +455,7 @@
             `;
             list.appendChild(li);
             document.getElementById('announcementInput').value = '';
+            document.getElementById('announcementImgInput').value = '';
             
             sessionStorage.removeItem('founder_announcement_closed');
             
@@ -457,28 +468,48 @@
         function editAnnouncement(btn) {
             if((userRole !== 'admin' && userRole !== 'founder') || (userRole === 'admin' && isLockdownOn)) return;
             const itemContent = btn.closest('.list-item').querySelector('.list-item-content');
-            const currentText = itemContent.innerText;
-            const newText = prompt("Modifier l'annonce :", currentText);
-            if(newText !== null && newText.trim() !== "") {
-                itemContent.innerText = newText.trim();
-                sessionStorage.removeItem('founder_announcement_closed');
-                addLog(`[Annonce] L'annonce a été modifiée.`);
-                saveData();
-                checkFounderModalDisplay();
+            const textSpan = itemContent.querySelector('.text-part');
+            const imgContainer = itemContent.querySelector('.item-image-container');
+            const currentImg = imgContainer.querySelector('img') ? imgContainer.querySelector('img').src : "";
+
+            const newText = prompt("Modifier l'annonce :", textSpan ? textSpan.innerText : "");
+            if(newText === null) return;
+            const newImg = prompt("Modifier ou ajouter l'URL de l'image (laisser vide pour supprimer l'image) :", currentImg);
+            if(newImg === null) return;
+
+            if(textSpan) textSpan.innerText = newText.trim();
+            
+            if(newImg.trim() !== "") {
+                imgContainer.style.display = "block";
+                imgContainer.innerHTML = `<img src="${newImg.trim()}" alt="Image annonce">`;
+            } else {
+                imgContainer.style.display = "none";
+                imgContainer.innerHTML = "";
             }
+
+            sessionStorage.removeItem('founder_announcement_closed');
+            addLog(`[Annonce] L'annonce a été modifiée.`);
+            saveData();
+            checkFounderModalDisplay();
         }
 
         function addAnim() {
             if((userRole !== 'admin' && userRole !== 'founder') || (userRole === 'admin' && isLockdownOn)) return;
             const title = document.getElementById('animTitle').value.trim();
             const desc = document.getElementById('animDesc').value.trim();
+            const imgSrc = document.getElementById('animImgInput').value.trim();
             if(!title) return;
             const list = document.getElementById('animList');
+
+            let imgHTML = imgSrc ? `<div class="item-image-container"><img src="${imgSrc}" alt="Image animation"></div>` : `<div class="item-image-container" style="display:none;"></div>`;
 
             const li = document.createElement('li');
             li.className = 'list-item';
             li.innerHTML = `
-                <div class="list-item-content"><strong>${title}</strong><br><small>${desc}</small></div>
+                <div class="list-item-content">
+                    <strong class="title-part">${title}</strong><br><small class="desc-part">${desc}</small>
+                    ${imgHTML}
+                </div>
                 <div>
                     <button class="btn btn-edit staff-only" style="display:inline-block !important;" onclick="editAnim(this)">Modifier</button>
                     <button class="btn btn-del staff-only" style="display:inline-block !important;" onclick="this.closest('.list-item').remove(); addLog('[Animation/Présentation] L\\'élément a été supprimé.'); saveData();">Supprimer</button>
@@ -488,6 +519,7 @@
             
             document.getElementById('animTitle').value = '';
             document.getElementById('animDesc').value = '';
+            document.getElementById('animImgInput').value = '';
             addLog(`[Animation/Présentation] Nouvel élément "${title}" publié.`);
             saveData();
             applyRoleUI();
@@ -497,8 +529,11 @@
             if((userRole !== 'admin' && userRole !== 'founder') || (userRole === 'admin' && isLockdownOn)) return;
             const itemContent = btn.closest('.list-item').querySelector('.list-item-content');
             
-            const strongTag = itemContent.querySelector('strong');
-            const smallTag = itemContent.querySelector('small');
+            const strongTag = itemContent.querySelector('.title-part');
+            const smallTag = itemContent.querySelector('.desc-part');
+            const imgContainer = itemContent.querySelector('.item-image-container');
+            const currentImg = imgContainer.querySelector('img') ? imgContainer.querySelector('img').src : "";
+
             const currentTitle = strongTag ? strongTag.innerText : "";
             const currentDesc = smallTag ? smallTag.innerText : "";
 
@@ -506,8 +541,20 @@
             if(newTitle === null) return;
             const newDesc = prompt("Modifier la description / présentation :", currentDesc);
             if(newDesc === null) return;
+            const newImg = prompt("Modifier ou ajouter l'URL de l'image (laisser vide pour supprimer l'image) :", currentImg);
+            if(newImg === null) return;
 
-            itemContent.innerHTML = `<strong>${newTitle.trim()}</strong><br><small>${newDesc.trim()}</small>`;
+            if(strongTag) strongTag.innerText = newTitle.trim();
+            if(smallTag) smallTag.innerText = newDesc.trim();
+
+            if(newImg.trim() !== "") {
+                imgContainer.style.display = "block";
+                imgContainer.innerHTML = `<img src="${newImg.trim()}" alt="Image animation">`;
+            } else {
+                imgContainer.style.display = "none";
+                imgContainer.innerHTML = "";
+            }
+
             addLog(`[Animation/Présentation] L'élément a été modifié.`);
             saveData();
         }
