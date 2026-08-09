@@ -7,9 +7,9 @@
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background-color: #0f111a; color: #fff; min-height: 100vh; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0f111a; color: #ffffff; min-height: 100vh; }
 
-        /* --- NAVIGATION SUPÉRIEURE (MENU EN HAUT) --- */
+        /* --- NAVBAR SUPÉRIEURE --- */
         .top-nav {
             background-color: #121420;
             padding: 15px 20px;
@@ -18,96 +18,127 @@
             align-items: center;
             border-bottom: 1px solid #2a2e45;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
         }
-        .nav-menu { display: flex; gap: 15px; }
-        .nav-btn { background: none; border: none; color: #a0a5c0; cursor: pointer; padding: 8px; }
-        .nav-btn.active { color: #fff; border-bottom: 2px solid #5865F2; }
-
-        /* --- RESPONSIVITÉ POUR TÉLÉPHONE --- */
-        .app-container { padding: 20px; max-width: 1200px; margin: auto; }
+        .nav-menu { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .nav-btn { background: none; border: none; color: #a0a5c0; cursor: pointer; padding: 8px 12px; border-radius: 6px; font-weight: bold; }
+        .nav-btn:hover, .nav-btn.active { background: #1a1d2e; color: #fff; }
         
+        /* Badge Statut */
+        #maintenanceBadge { padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+
+        /* --- CONTENEUR PRINCIPAL --- */
+        .app-container { max-width: 1000px; margin: 20px auto; padding: 0 20px; }
+
+        /* --- BLOCS & RESPONSIVITÉ --- */
+        .card { background-color: #1a1d2e; border: 1px solid #2a2e45; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+
+        .admin-only, .founder-only, .logged-in-only { display: none !important; }
+
+        /* Mobile Adjustments */
         @media (max-width: 600px) {
             .top-nav { flex-direction: column; text-align: center; }
-            .nav-menu { gap: 5px; }
-            .founder-panel-box > div { grid-template-columns: 1fr !important; }
+            h1 { font-size: 1.5rem; }
         }
 
-        /* --- RESTE DU STYLE --- */
-        .view-section { display: none; }
-        .view-section.active { display: block; }
-        .update-box, .announcements-box { background: #1a1d2e; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        
-        /* Contrôles masqués */
-        .admin-only, .founder-only, .logged-in-only { display: none; }
-        
         /* Boutons */
-        .btn-save { background: #5865F2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+        .btn-action { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-save { background: #5865F2; color: white; }
+        .btn-del { background: #f23f43; color: white; }
     </style>
 </head>
 <body>
 
-    <!-- MENU EN HAUT -->
+    <!-- NAVBAR EN HAUT -->
     <nav class="top-nav">
-        <div style="font-weight: bold; color: #5865F2;">Espace Communauté</div>
+        <div style="font-weight: bold; color: #5865F2;">Espace Admin</div>
         <div class="nav-menu">
             <button class="nav-btn active" onclick="switchView('dashboard', this)">Dashboard</button>
-            <button class="nav-btn" onclick="switchView('credits', this)">Crédits</button>
-            <button id="btnLoginNav" class="nav-btn" onclick="openAdminModal()">Connexion</button>
-            <button id="btnLogoutNav" class="logged-in-only nav-btn" onclick="logoutStaff()" style="color: #f23f43;">Déconnexion</button>
+            <button class="nav-btn" onclick="switchView('credits', this)">Animation</button>
+            <button id="btnLoginNav" class="nav-btn" style="color:#f0b232;" onclick="openAdminModal()">Connexion Staff</button>
+            <button id="btnLogoutNav" class="logged-in-only nav-btn" style="color:#f23f43;" onclick="logoutStaff()">Déconnexion</button>
         </div>
-        <div id="maintenanceBadge" style="background: #23a55a; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">Statut : Public</div>
+        <div id="maintenanceBadge" style="background: #23a55a;">Statut : Public Actif</div>
     </nav>
 
     <div class="app-container">
-        <!-- Dashboard -->
-        <div id="view-dashboard" class="view-section active">
-            <h1>Bienvenue</h1>
-            <div class="update-box">
-                <p>Contenu principal ici...</p>
-                <div class="founder-only">
-                    <button class="btn-save" onclick="toggleMaintenance()">Toggle Maintenance</button>
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="view-section" style="display:block;">
+            <div class="card">
+                <h1 id="pageTitle">Tableau de Bord</h1>
+                <p id="siteUpdateDisplay">Bienvenue sur le panneau de contrôle.</p>
+                
+                <div class="founder-only" style="margin-top:15px; padding-top:15px; border-top:1px solid #2a2e45;">
+                    <button class="btn-action btn-save" id="btnToggleMaint" onclick="toggleMaintenance()">Activer la maintenance</button>
                 </div>
+            </div>
+            
+            <div class="card admin-only">
+                <h3>Annonces</h3>
+                <input type="text" id="newAnnouncementInput" style="width:100%; padding:8px; margin: 10px 0;">
+                <button class="btn-action btn-save" onclick="addAnnouncement()">Publier</button>
             </div>
         </div>
 
-        <!-- Credits -->
-        <div id="view-credits" class="view-section">
-            <h1>Crédits</h1>
+        <!-- Animation View -->
+        <div id="view-credits" class="view-section" style="display:none;">
+            <div class="card">
+                <h1>Équipe Animation</h1>
+                <p>Gestion des activités.</p>
+            </div>
         </div>
     </div>
 
     <script>
         let userRole = null;
+        let isMaintenanceOn = false;
 
         function switchView(viewId, btn) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(s => s.style.display = 'none');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('view-' + viewId).classList.add('active');
+            document.getElementById('view-' + viewId).style.display = 'block';
             btn.classList.add('active');
         }
 
-        // Simuler connexion
         function openAdminModal() {
-            userRole = 'founder'; // Test auto
-            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
-            document.querySelectorAll('.founder-only').forEach(el => el.style.display = 'block');
-            document.querySelectorAll('.logged-in-only').forEach(el => el.style.display = 'block');
+            const pass = prompt("Mot de passe :");
+            if(pass === "Kaljor90137") { // Remplacer par votre mot de passe
+                userRole = 'founder';
+                applyRoleStyles();
+            }
+        }
+
+        function applyRoleStyles() {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+            document.querySelectorAll('.founder-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+            document.querySelectorAll('.logged-in-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
             document.getElementById('btnLoginNav').style.display = 'none';
         }
 
         function toggleMaintenance() {
+            isMaintenanceOn = !isMaintenanceOn;
             const badge = document.getElementById('maintenanceBadge');
-            if(badge.innerText.includes('Public')) {
-                badge.innerText = "Statut : Maintenance";
+            const btn = document.getElementById('btnToggleMaint');
+            if(isMaintenanceOn) {
+                badge.innerText = "Statut : 🛠️ Maintenance";
                 badge.style.background = "#f23f43";
+                btn.innerText = "Désactiver la maintenance";
             } else {
-                badge.innerText = "Statut : Public";
+                badge.innerText = "Statut : Public Actif";
                 badge.style.background = "#23a55a";
+                btn.innerText = "Activer la maintenance";
             }
         }
-        
-        function logoutStaff() { location.reload(); }
+
+        function logoutStaff() {
+            userRole = null;
+            location.reload();
+        }
+
+        function addAnnouncement() {
+            alert("Annonce ajoutée : " + document.getElementById('newAnnouncementInput').value);
+        }
     </script>
 </body>
 </html>
