@@ -123,7 +123,7 @@
             <div class="card">
                 <h3>📢 Annonces Globales</h3>
                 <ul id="announcementList" class="item-list">
-                    <!-- Vide par défaut pour supprimer l'exemple de base -->
+                    <!-- Vide par défaut pour afficher les boutons uniquement lors de l'ajout -->
                 </ul>
                 <!-- Gérable par Admin et Fondateur -->
                 <div class="admin-only founder-only" style="margin-top:15px;">
@@ -133,30 +133,30 @@
             </div>
         </div>
 
-        <!-- SECTION 2 : ÉQUIPE ANIMATION -->
+        <!-- SECTION 2 : ÉQUIPE ANIMATION & PRÉSENTATION -->
         <div id="view-anim" class="view-section" style="display:none;">
             <div class="card">
-                <h1>Activités & Présentation Animation</h1>
-                <p style="color:#a0a5c0; margin-top:8px;">Suivi des rôles et des événements gérés par l'équipe d'animation.</p>
+                <h1>Présentation de l'Équipe & Activités Animation</h1>
+                <p style="color:#a0a5c0; margin-top:8px;">Suivi des messages de présentation et des événements gérés par l'équipe.</p>
                 
                 <ul id="animList" class="item-list">
-                    <!-- Vide par défaut pour supprimer l'exemple de base -->
+                    <!-- Vide par défaut -->
                 </ul>
                 <!-- Gérable par Admin et Fondateur -->
                 <div class="admin-only founder-only" style="margin-top:15px;">
-                    <h4 style="margin-bottom:8px; color:#5865F2;">Ajouter une activité / message</h4>
-                    <input type="text" id="animTitle" placeholder="Titre de l'activité / Rôle...">
-                    <textarea id="animDesc" placeholder="Description de l'activité ou de l'animateur..."></textarea>
+                    <h4 style="margin-bottom:8px; color:#5865F2;">Ajouter un message de présentation ou une activité</h4>
+                    <input type="text" id="animTitle" placeholder="Titre (ex: Présentation Staff / Nom d'activité)...">
+                    <textarea id="animDesc" placeholder="Contenu du message ou description..."></textarea>
                     <button class="btn btn-main" onclick="addAnim()">Ajouter l'élément</button>
                 </div>
             </div>
         </div>
 
-        <!-- SECTION 3 : SECTION EXCLUSIVE FONDATION -->
+        <!-- SECTION 3 : SECTION EXCLUSIVE FONDATION (Commandes Avancées) -->
         <div id="view-founderPanel" class="view-section" style="display:none;">
             <div class="card founder-only">
                 <h2 style="color: #f0b232; margin-bottom: 10px;">👑 Console Exclusive de la Fondation</h2>
-                <p style="color: #a0a5c0; margin-bottom: 20px;">Panneau de contrôle suprême réservé strictement aux fondateurs de Rescue Horizon RP.</p>
+                <p style="color: #a0a5c0; margin-bottom: 20px;">Panneau de contrôle suprême avec privilèges et commandes avancées exclusifs.</p>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                     <div style="background:#121420; padding:15px; border-radius:8px; border:1px solid #2a2e45;">
@@ -166,14 +166,26 @@
                     </div>
 
                     <div style="background:#121420; padding:15px; border-radius:8px; border:1px solid #2a2e45;">
+                        <h4 style="margin-bottom:8px;">🛡️ Mode Lockdown Total</h4>
+                        <p style="font-size:0.85rem; color:#a0a5c0; margin-bottom:10px;">Verrouille immédiatement toutes les modifications admin.</p>
+                        <button class="btn btn-del" id="btnLockdown" onclick="toggleLockdown()">Activer le Lockdown</button>
+                    </div>
+
+                    <div style="background:#121420; padding:15px; border-radius:8px; border:1px solid #2a2e45;">
                         <h4 style="margin-bottom:8px;">🧹 Réinitialisation Totale</h4>
                         <p style="font-size:0.85rem; color:#a0a5c0; margin-bottom:10px;">Efface toutes les données personnalisées du site.</p>
                         <button class="btn btn-del" onclick="resetSiteData()">Nettoyer le cache</button>
                     </div>
+
+                    <div style="background:#121420; padding:15px; border-radius:8px; border:1px solid #2a2e45;">
+                        <h4 style="margin-bottom:8px;">📢 Alerte Globale d'Urgence</h4>
+                        <p style="font-size:0.85rem; color:#a0a5c0; margin-bottom:10px;">Envoie une notification d'urgence visuelle sur les écrans.</p>
+                        <button class="btn btn-edit" onclick="triggerEmergencyAlert()">Envoyer l'alerte</button>
+                    </div>
                 </div>
 
                 <h3 style="margin-bottom: 10px; color: #fff;">📋 Logs de Connexion & Activité en Direct</h3>
-                <p style="font-size: 0.85rem; color: #a0a5c0; margin-bottom: 10px;">Historique sécurisé de toutes les connexions staff et modifications effectuées :</p>
+                <p style="font-size: 0.85rem; color: #a0a5c0; margin-bottom: 10px;">Historique sécurisé de toutes les connexions et modifications effectuées :</p>
                 <div id="logsContainer" class="log-box">
                     <div class="log-item">[Système] Initialisation des logs de sécurité de Rescue Horizon.</div>
                 </div>
@@ -185,6 +197,7 @@
     <script>
         let userRole = null; // 'admin', 'founder' ou null
         let isMaintenanceOn = false;
+        let isLockdownOn = false;
 
         // --- CHARGEMENT DES DONNÉES EN DIRECT AVEC LOCALSTORAGE & SYNC AUTOMATIQUE ---
         function loadData() {
@@ -199,6 +212,9 @@
                         isMaintenanceOn = parsed.isMaintenance;
                         applyMaintenanceState();
                     }
+                    if(parsed.isLockdown !== undefined) {
+                        isLockdownOn = parsed.isLockdown;
+                    }
                     if(parsed.logs !== undefined) document.getElementById('logsContainer').innerHTML = parsed.logs;
                     
                     applyRoleUI();
@@ -212,6 +228,7 @@
                 animList: document.getElementById('animList').innerHTML,
                 siteUpdate: document.getElementById('siteUpdateDisplay').innerHTML,
                 isMaintenance: isMaintenanceOn,
+                isLockdown: isLockdownOn,
                 logs: document.getElementById('logsContainer').innerHTML
             };
             localStorage.setItem('rescue_horizon_data', JSON.stringify(dataToSave));
@@ -278,7 +295,12 @@
             const loggedInElements = document.querySelectorAll('.logged-in-only');
 
             if(userRole === 'admin') {
-                adminElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
+                if(isLockdownOn) {
+                    alert("Alerte : Le mode Lockdown est actif par la Fondation. Vos modifications sont restreintes.");
+                    adminElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
+                } else {
+                    adminElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
+                }
                 founderElements.forEach(el => el.style.setProperty('display', 'none', 'important'));
                 loggedInElements.forEach(el => el.style.setProperty('display', 'block', 'important'));
                 document.getElementById('btnLoginNav').style.display = 'none';
@@ -310,13 +332,13 @@
             const logItem = document.createElement('div');
             logItem.className = 'log-item';
             logItem.innerText = `[${time}] ${text}`;
-            container.prepend(logItem);
+            if(container) container.prepend(logItem);
             saveData();
         }
 
-        // --- GESTION DES ANNONCES (Modifiable, Supprimable avec les boutons admin/fonda) ---
+        // --- GESTION DES ANNONCES (Admin + Fondateur : Ajout, Modif, Suppression) ---
         function addAnnouncement() {
-            if(userRole !== 'admin' && userRole !== 'founder') return;
+            if((userRole !== 'admin' && userRole !== 'founder') || (userRole === 'admin' && isLockdownOn)) return;
             const text = document.getElementById('announcementInput').value.trim();
             if(!text) return;
             const list = document.getElementById('announcementList');
@@ -337,7 +359,7 @@
         }
 
         function editAnnouncement(btn) {
-            if(userRole !== 'admin' && userRole !== 'founder') return;
+            if((userRole !== 'admin' && userRole !== 'founder') || (userRole === 'admin' && isLockdownOn)) return;
             const itemContent = btn.closest('.list-item').querySelector('.list-item-content');
             const currentText = itemContent.innerText;
             const newText = prompt("Modifier l'annonce :", currentText);
@@ -348,9 +370,9 @@
             }
         }
 
-        // --- GESTION DE L'ÉQUIPE D'ANIMATION (Modifiable, Supprimable avec les boutons admin/fonda) ---
+        // --- GESTION DE L'ÉQUIPE D'ANIMATION & PRÉSENTATION (Admin + Fondateur) ---
         function addAnim() {
-            if(userRole !== 'admin' && userRole !== 'founder') return;
+            if((userRole !== 'admin' && userRole !== 'founder') || (userRole === 'admin' && isLockdownOn)) return;
             const title = document.getElementById('animTitle').value.trim();
             const desc = document.getElementById('animDesc').value.trim();
             if(!title) return;
@@ -361,19 +383,19 @@
                 <div class="list-item-content"><strong>${title}</strong><br><small>${desc}</small></div>
                 <div>
                     <button class="btn btn-edit admin-only founder-only" onclick="editAnim(this)">Modifier</button>
-                    <button class="btn btn-del admin-only founder-only" onclick="this.closest('.list-item').remove(); addLog('[Animation] Une activité a été supprimée.'); saveData();">Supprimer</button>
+                    <button class="btn btn-del admin-only founder-only" onclick="this.closest('.list-item').remove(); addLog('[Animation/Présentation] Un élément a été supprimé.'); saveData();">Supprimer</button>
                 </div>
             `;
             list.appendChild(li);
             document.getElementById('animTitle').value = '';
             document.getElementById('animDesc').value = '';
-            addLog(`[Animation] Activité "${title}" ajoutée.`);
+            addLog(`[Animation/Présentation] Élément "${title}" ajouté.`);
             saveData();
             applyRoleUI();
         }
 
         function editAnim(btn) {
-            if(userRole !== 'admin' && userRole !== 'founder') return;
+            if((userRole !== 'admin' && userRole !== 'founder') || (userRole === 'admin' && isLockdownOn)) return;
             const itemContent = btn.closest('.list-item').querySelector('.list-item-content');
             
             const strongTag = itemContent.querySelector('strong');
@@ -381,17 +403,17 @@
             const currentTitle = strongTag ? strongTag.innerText : "";
             const currentDesc = smallTag ? smallTag.innerText : "";
 
-            const newTitle = prompt("Modifier le titre de l'activité / rôle :", currentTitle);
+            const newTitle = prompt("Modifier le titre / nom :", currentTitle);
             if(newTitle === null) return;
-            const newDesc = prompt("Modifier la description :", currentDesc);
+            const newDesc = prompt("Modifier la description / présentation :", currentDesc);
             if(newDesc === null) return;
 
             itemContent.innerHTML = `<strong>${newTitle.trim()}</strong><br><small>${newDesc.trim()}</small>`;
-            addLog(`[Animation] Une activité / présentation a été modifiée.`);
+            addLog(`[Animation/Présentation] Un élément a été modifié.`);
             saveData();
         }
 
-        // --- FONCTIONNALITÉS EXCLUSIVES FONDATION (Mises à jour & Maintenance) ---
+        // --- FONCTIONNALITÉS EXCLUSIVES FONDATION (Mises à jour, Maintenance & Commandes Avancées) ---
         function saveSiteUpdate() {
             if(userRole !== 'founder') return;
             const text = document.getElementById('inputUpdateText').value.trim();
@@ -421,13 +443,40 @@
                 badge.style.background = "#f23f43";
                 if(btn) btn.innerText = "Désactiver la maintenance";
                 if(userRole !== 'founder') {
-                    overlay.style.display = 'flex';
+                    if(overlay) overlay.style.display = 'flex';
                 }
             } else {
                 badge.innerText = "Statut : Public Actif";
                 badge.style.background = "#23a55a";
                 if(btn) btn.innerText = "Activer la maintenance";
-                overlay.style.display = 'none';
+                if(overlay) overlay.style.display = 'none';
+            }
+        }
+
+        function toggleLockdown() {
+            if(userRole !== 'founder') return;
+            isLockdownOn = !isLockdownOn;
+            const btn = document.getElementById('btnLockdown');
+            if(isLockdownOn) {
+                btn.innerText = "Désactiver le Lockdown";
+                btn.style.background = "#23a55a";
+                addLog(`[Fondation] MODE LOCKDOWN ACTIVÉ : Modifications admin bloquées.`);
+            } else {
+                btn.innerText = "Activer le Lockdown";
+                btn.style.background = "#f23f43";
+                addLog(`[Fondation] Mode Lockdown désactivé.`);
+            }
+            saveData();
+            applyRoleUI();
+        }
+
+        function triggerEmergencyAlert() {
+            if(userRole !== 'founder') return;
+            const msg = prompt("Entrez le message d'alerte d'urgence pour la communauté :");
+            if(msg) {
+                alert("🚨 ALERTE FONDATION 🚨\n\n" + msg);
+                addLog(`[Fondation] Alerte d'urgence diffusée : "${msg}"`);
+                saveData();
             }
         }
 
