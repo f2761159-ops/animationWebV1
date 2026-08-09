@@ -1,98 +1,122 @@
+# Creating the updated HTML file with the requested enhancements:
+# 1. Automatic "Member" default state.
+# 2. More content sections for "Rescue Horizon Roleplay".
+# 3. Enhanced Admin/Founder management for announcements and animation tasks.
+# 4. Responsive design.
+
+html_content = """
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Communauté</title>
+    <title>Rescue Horizon - Panneau Staff</title>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0f111a; color: #ffffff; min-height: 100vh; }
 
-        /* --- NAVBAR SUPÉRIEURE --- */
+        /* NAVBAR SUPÉRIEURE */
         .top-nav {
             background-color: #121420;
             padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #2a2e45;
+            border-bottom: 2px solid #5865F2;
             flex-wrap: wrap;
             gap: 15px;
         }
         .nav-menu { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        .nav-btn { background: none; border: none; color: #a0a5c0; cursor: pointer; padding: 8px 12px; border-radius: 6px; font-weight: bold; }
+        .nav-btn { background: none; border: none; color: #a0a5c0; cursor: pointer; padding: 8px 12px; border-radius: 6px; font-weight: bold; transition: 0.3s; }
         .nav-btn:hover, .nav-btn.active { background: #1a1d2e; color: #fff; }
         
-        /* Badge Statut */
-        #maintenanceBadge { padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        #maintenanceBadge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; background: #23a55a; }
 
-        /* --- CONTENEUR PRINCIPAL --- */
-        .app-container { max-width: 1000px; margin: 20px auto; padding: 0 20px; }
+        /* CONTENEUR */
+        .app-container { max-width: 1100px; margin: 20px auto; padding: 0 20px; }
+        .card { background-color: #1a1d2e; border: 1px solid #2a2e45; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
-        /* --- BLOCS & RESPONSIVITÉ --- */
-        .card { background-color: #1a1d2e; border: 1px solid #2a2e45; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
-
+        /* VISIBILITÉ RÔLES */
         .admin-only, .founder-only, .logged-in-only { display: none !important; }
 
-        /* Mobile Adjustments */
-        @media (max-width: 600px) {
-            .top-nav { flex-direction: column; text-align: center; }
-            h1 { font-size: 1.5rem; }
+        /* RESPONSIVITÉ */
+        @media (max-width: 768px) {
+            .top-nav { flex-direction: column; }
+            h1 { font-size: 1.4rem; }
         }
 
-        /* Boutons */
-        .btn-action { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-save { background: #5865F2; color: white; }
+        /* BOUTONS ET INPUTS */
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; }
+        .btn-main { background: #5865F2; color: white; }
         .btn-del { background: #f23f43; color: white; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #2a2e45; background: #121420; color: white; }
+
+        /* LISTES */
+        .item-list { list-style: none; margin-top: 15px; }
+        .list-item { background: #121420; padding: 12px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #5865F2; }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR EN HAUT -->
+    <!-- NAVBAR -->
     <nav class="top-nav">
-        <div style="font-weight: bold; color: #5865F2;">Espace Admin</div>
+        <div style="font-weight: bold; color: #5865F2; font-size: 1.2rem;">Rescue Horizon RP</div>
         <div class="nav-menu">
-            <button class="nav-btn active" onclick="switchView('dashboard', this)">Dashboard</button>
-            <button class="nav-btn" onclick="switchView('credits', this)">Animation</button>
+            <button class="nav-btn active" onclick="switchView('dashboard', this)">Tableau de Bord</button>
+            <button class="nav-btn" onclick="switchView('anim', this)">Gestion Animation</button>
             <button id="btnLoginNav" class="nav-btn" style="color:#f0b232;" onclick="openAdminModal()">Connexion Staff</button>
             <button id="btnLogoutNav" class="logged-in-only nav-btn" style="color:#f23f43;" onclick="logoutStaff()">Déconnexion</button>
         </div>
-        <div id="maintenanceBadge" style="background: #23a55a;">Statut : Public Actif</div>
+        <div id="maintenanceBadge">Statut : Public Actif</div>
     </nav>
 
     <div class="app-container">
-        <!-- Dashboard View -->
-        <div id="view-dashboard" class="view-section" style="display:block;">
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="view-section">
             <div class="card">
-                <h1 id="pageTitle">Tableau de Bord</h1>
-                <p id="siteUpdateDisplay">Bienvenue sur le panneau de contrôle.</p>
+                <h1>Bienvenue sur le Panneau Staff</h1>
+                <p style="color:#a0a5c0; margin-top:10px;">Gestion centralisée de Rescue Horizon Roleplay.</p>
                 
-                <div class="founder-only" style="margin-top:15px; padding-top:15px; border-top:1px solid #2a2e45;">
-                    <button class="btn-action btn-save" id="btnToggleMaint" onclick="toggleMaintenance()">Activer la maintenance</button>
+                <div class="founder-only" style="margin-top:20px; padding:15px; background:#121420; border-radius:8px;">
+                    <h3>👑 Commandes Fondateur</h3>
+                    <button class="btn btn-main" id="btnToggleMaint" onclick="toggleMaintenance()">Activer la maintenance</button>
                 </div>
             </div>
-            
-            <div class="card admin-only">
-                <h3>Annonces</h3>
-                <input type="text" id="newAnnouncementInput" style="width:100%; padding:8px; margin: 10px 0;">
-                <button class="btn-action btn-save" onclick="addAnnouncement()">Publier</button>
+
+            <div class="card">
+                <h3>📢 Annonces Globales</h3>
+                <ul id="announcementList" class="item-list">
+                    <li class="list-item">Bienvenue sur le nouveau panneau staff de Rescue Horizon !</li>
+                </ul>
+                <div class="admin-only">
+                    <input type="text" id="announcementInput" placeholder="Nouvelle annonce...">
+                    <button class="btn btn-main" onclick="addAnnouncement()">Publier</button>
+                </div>
             </div>
         </div>
 
-        <!-- Animation View -->
-        <div id="view-credits" class="view-section" style="display:none;">
+        <!-- ANIMATION VIEW -->
+        <div id="view-anim" class="view-section" style="display:none;">
             <div class="card">
-                <h1>Équipe Animation</h1>
-                <p>Gestion des activités.</p>
+                <h1>Activités Animation</h1>
+                <p>Suivi et gestion des événements organisés pour la communauté.</p>
+                <ul id="animList" class="item-list">
+                    <li class="list-item">
+                        <div><strong>Soirée Course de voitures</strong><br><small>Responsable: Jules</small></div>
+                    </li>
+                </ul>
+                <div class="admin-only">
+                    <input type="text" id="animTitle" placeholder="Nom de l'activité...">
+                    <input type="text" id="animBy" placeholder="Responsable...">
+                    <button class="btn btn-main" onclick="addAnim()">Ajouter Activité</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         let userRole = null;
-        let isMaintenanceOn = false;
 
         function switchView(viewId, btn) {
             document.querySelectorAll('.view-section').forEach(s => s.style.display = 'none');
@@ -102,25 +126,33 @@
         }
 
         function openAdminModal() {
-            const pass = prompt("Mot de passe :");
-            if(pass === "Kaljor90137") { // Remplacer par votre mot de passe
+            const pass = prompt("Entrez le mot de passe staff :");
+            if(pass === "Kaljor90137") {
                 userRole = 'founder';
-                applyRoleStyles();
+                showAdminControls();
+            } else if(pass === "gazpartout") {
+                userRole = 'admin';
+                showAdminControls();
+            } else {
+                alert("Mot de passe incorrect.");
             }
         }
 
-        function applyRoleStyles() {
+        function showAdminControls() {
             document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
-            document.querySelectorAll('.founder-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+            if(userRole === 'founder') {
+                document.querySelectorAll('.founder-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
+            }
             document.querySelectorAll('.logged-in-only').forEach(el => el.style.setProperty('display', 'block', 'important'));
             document.getElementById('btnLoginNav').style.display = 'none';
         }
 
+        function logoutStaff() { location.reload(); }
+
         function toggleMaintenance() {
-            isMaintenanceOn = !isMaintenanceOn;
             const badge = document.getElementById('maintenanceBadge');
             const btn = document.getElementById('btnToggleMaint');
-            if(isMaintenanceOn) {
+            if(badge.innerText.includes('Public')) {
                 badge.innerText = "Statut : 🛠️ Maintenance";
                 badge.style.background = "#f23f43";
                 btn.innerText = "Désactiver la maintenance";
@@ -131,14 +163,28 @@
             }
         }
 
-        function logoutStaff() {
-            userRole = null;
-            location.reload();
+        function addAnnouncement() {
+            const text = document.getElementById('announcementInput').value;
+            if(!text) return;
+            const li = document.createElement('li');
+            li.className = 'list-item';
+            li.innerHTML = text + '<button class="btn btn-del" onclick="this.parentElement.remove()">X</button>';
+            document.getElementById('announcementList').appendChild(li);
+            document.getElementById('announcementInput').value = '';
         }
 
-        function addAnnouncement() {
-            alert("Annonce ajoutée : " + document.getElementById('newAnnouncementInput').value);
+        function addAnim() {
+            const title = document.getElementById('animTitle').value;
+            const by = document.getElementById('animBy').value;
+            if(!title) return;
+            const li = document.createElement('li');
+            li.className = 'list-item';
+            li.innerHTML = `<div><strong>${title}</strong><br><small>Responsable: ${by}</small></div><button class="btn btn-del" onclick="this.parentElement.remove()">X</button>`;
+            document.getElementById('animList').appendChild(li);
         }
     </script>
 </body>
 </html>
+"""
+with open("rescue_horizon_staff.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
