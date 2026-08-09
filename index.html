@@ -181,6 +181,7 @@
         let isLockdownOn = false;
 
         function loadData() {
+            // Nettoyage automatique du localStorage pour vider les anciennes données par défaut si elles y étaient stockées
             const savedData = localStorage.getItem('rescue_horizon_data');
             if (savedData) {
                 try {
@@ -222,6 +223,21 @@
         });
 
         window.onload = function() {
+            // Si le localStorage contient encore les anciennes annonces ou activités par défaut, on les nettoie à vide une bonne fois pour toutes
+            const savedData = localStorage.getItem('rescue_horizon_data');
+            if(savedData) {
+                try {
+                    let parsed = JSON.parse(savedData);
+                    if(parsed.announcements && parsed.announcements.includes("Bienvenue sur le panneau")) {
+                        parsed.announcements = "";
+                        localStorage.setItem('rescue_horizon_data', JSON.stringify(parsed));
+                    }
+                    if(parsed.animList && parsed.animList.includes("Soirée Course de Voitures")) {
+                        parsed.animList = "";
+                        localStorage.setItem('rescue_horizon_data', JSON.stringify(parsed));
+                    }
+                } catch(e) {}
+            }
             loadData();
         };
 
@@ -311,23 +327,28 @@
             saveData();
         }
 
+        // MODIFICATION : Remplacement total de l'ancienne annonce par la nouvelle (une seule visible à la fois)
         function addAnnouncement() {
             if((userRole !== 'admin' && userRole !== 'founder') || (userRole === 'admin' && isLockdownOn)) return;
             const text = document.getElementById('announcementInput').value.trim();
             if(!text) return;
             const list = document.getElementById('announcementList');
+            
+            // Vide la liste pour remplacer l'ancienne annonce par la nouvelle
+            list.innerHTML = "";
+
             const li = document.createElement('li');
             li.className = 'list-item';
             li.innerHTML = `
                 <div class="list-item-content">${text}</div>
                 <div>
                     <button class="btn btn-edit staff-only" style="display:inline-block !important;" onclick="editAnnouncement(this)">Modifier</button>
-                    <button class="btn btn-del staff-only" style="display:inline-block !important;" onclick="this.closest('.list-item').remove(); addLog('[Annonce] Une annonce a été supprimée.'); saveData();">Supprimer</button>
+                    <button class="btn btn-del staff-only" style="display:inline-block !important;" onclick="this.closest('.list-item').remove(); addLog('[Annonce] L\\'annonce a été supprimée.'); saveData();">Supprimer</button>
                 </div>
             `;
             list.appendChild(li);
             document.getElementById('announcementInput').value = '';
-            addLog(`[Annonce] Nouvelle annonce ajoutée.`);
+            addLog(`[Annonce] Nouvelle annonce publiée (remplacement de la précédente).`);
             saveData();
             applyRoleUI();
         }
@@ -339,30 +360,35 @@
             const newText = prompt("Modifier l'annonce :", currentText);
             if(newText !== null && newText.trim() !== "") {
                 itemContent.innerText = newText.trim();
-                addLog(`[Annonce] Une annonce a été modifiée.`);
+                addLog(`[Annonce] L'annonce a été modifiée.`);
                 saveData();
             }
         }
 
+        // MODIFICATION : Remplacement total de l'ancienne activité par la nouvelle (une seule visible à la fois)
         function addAnim() {
             if((userRole !== 'admin' && userRole !== 'founder') || (userRole === 'admin' && isLockdownOn)) return;
             const title = document.getElementById('animTitle').value.trim();
             const desc = document.getElementById('animDesc').value.trim();
             if(!title) return;
             const list = document.getElementById('animList');
+
+            // Vide la liste pour remplacer l'ancienne activité par la nouvelle
+            list.innerHTML = "";
+
             const li = document.createElement('li');
             li.className = 'list-item';
             li.innerHTML = `
                 <div class="list-item-content"><strong>${title}</strong><br><small>${desc}</small></div>
                 <div>
                     <button class="btn btn-edit staff-only" style="display:inline-block !important;" onclick="editAnim(this)">Modifier</button>
-                    <button class="btn btn-del staff-only" style="display:inline-block !important;" onclick="this.closest('.list-item').remove(); addLog('[Animation/Présentation] Un élément a été supprimé.'); saveData();">Supprimer</button>
+                    <button class="btn btn-del staff-only" style="display:inline-block !important;" onclick="this.closest('.list-item').remove(); addLog('[Animation/Présentation] L\\'élément a été supprimé.'); saveData();">Supprimer</button>
                 </div>
             `;
             list.appendChild(li);
             document.getElementById('animTitle').value = '';
             document.getElementById('animDesc').value = '';
-            addLog(`[Animation/Présentation] Élément "${title}" ajouté.`);
+            addLog(`[Animation/Présentation] Nouvel élément "${title}" publié (remplacement du précédent).`);
             saveData();
             applyRoleUI();
         }
@@ -382,7 +408,7 @@
             if(newDesc === null) return;
 
             itemContent.innerHTML = `<strong>${newTitle.trim()}</strong><br><small>${newDesc.trim()}</small>`;
-            addLog(`[Animation/Présentation] Un élément a été modifié.`);
+            addLog(`[Animation/Présentation] L'élément a été modifié.`);
             saveData();
         }
 
